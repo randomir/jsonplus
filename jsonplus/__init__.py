@@ -34,13 +34,17 @@ def _json_object_hook(dict):
     return dict
 
 
-def dumps(*pa, **kw):
+def json_dumps(*pa, **kw):
     kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default}
     kwupt.update(kw)
     return json.dumps(*pa, **kwupt)
 
 
-def loads(*pa, **kw):
+def json_loads(*pa, **kw):
     kwupt = {'object_hook': _json_object_hook}
     kwupt.update(kw)
     return json.loads(*pa, **kwupt)
+
+
+def json_prettydump(x, sort_keys=True):
+    return json_dumps(x, sort_keys=sort_keys, indent=4*' ', separators=(',', ': '))
