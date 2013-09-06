@@ -2,6 +2,9 @@
 
 __version__ = '0.1'
 __author__ = 'Radomir Stevanovic'
+__author_email__ = 'radomir.stevanovic@gmail.com'
+__copyright__ = 'Copyright 2013 Radomir Stevanovic'
+__license__ = 'MIT'
 
 
 import simplejson as json
