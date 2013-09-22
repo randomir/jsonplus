@@ -1,6 +1,6 @@
 """Custom datatypes (like datetime) serialization to/from JSON."""
 
-__version__ = '0.2'
+__version__ = '0.3'
 __author__ = 'Radomir Stevanovic'
 __author_email__ = 'radomir.stevanovic@gmail.com'
 __copyright__ = 'Copyright 2013 Radomir Stevanovic'
@@ -10,24 +10,24 @@ __license__ = 'MIT'
 import simplejson as json
 from datetime import datetime, timedelta, date, time
 from dateutil.parser import parse as parse_datetime
-from functools import wraps
+from functools import wraps, partial
+from operator import methodcaller
 
 
-def _isoformat_for_json(value):
-    return {"__class__": type(value).__name__,
-            "__value__": value.isoformat()}
-
-def _timedelta_for_json(value):
-    return {"__class__": type(value).__name__,
-            "__value__": {"days": value.days,
-                          "seconds": value.seconds,
-                          "microseconds": value.microseconds}}
+def getattrs(value, attrs):
+    return {attr: getattr(value, attr) for attr in attrs}
 
 def _json_default(obj):
-    if isinstance(obj, datetime) or isinstance(obj, date) or isinstance(obj, time):
-        return _isoformat_for_json(obj)
-    elif isinstance(obj, timedelta):
-        return _timedelta_for_json(obj)
+    classname = type(obj).__name__
+    handlers = {
+        'datetime': methodcaller('isoformat'),
+        'date': methodcaller('isoformat'),
+        'time': methodcaller('isoformat'),
+        'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds'])
+    }
+    if classname in handlers:
+        return {"__class__": classname,
+                "__value__": handlers[classname](obj)}
     raise TypeError(repr(obj) + " is not JSON serializable")
 
 
