@@ -23,7 +23,9 @@ def _json_default(obj):
         'datetime': methodcaller('isoformat'),
         'date': methodcaller('isoformat'),
         'time': methodcaller('isoformat'),
-        'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds'])
+        'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
+        'set': list,
+        'complex': partial(getattrs, attrs=['real', 'imag'])
     }
     if classname in handlers:
         return {"__class__": classname,
@@ -43,7 +45,9 @@ def _json_object_hook(dict):
         'datetime': parse_datetime,
         'timedelta': kwargified(timedelta),
         'date': lambda v: parse_datetime(v).date(),
-        'time': lambda v: parse_datetime(v).timetz()
+        'time': lambda v: parse_datetime(v).timetz(),
+        'set': set,
+        'complex': kwargified(complex)
     }
     if classname:
         constructor = handlers.get(classname)
