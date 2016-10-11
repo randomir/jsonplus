@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 from setuptools import setup
-import jsonplus
 
 setup(
-    name=jsonplus.__name__,
-    version=jsonplus.__version__,
-    description=jsonplus.__doc__,
+    name='jsonplus',
+    version='0.4.1',
+    description="Custom datatypes (like datetime) serialization to/from JSON.",
     long_description=open('README.rst').read(),
-    author=jsonplus.__author__,
-    author_email=jsonplus.__author_email__,
-    url=jsonplus.__url__,
-    license=jsonplus.__license__,
-    packages=[jsonplus.__name__],
-    package_dir={jsonplus.__name__: jsonplus.__name__},
+    author='Radomir Stevanovic',
+    author_email='radomir.stevanovic@gmail.com',
+    url='https://github.com/randomir/jsonplus',
+    license='MIT',
+    packages=['jsonplus'],
+    package_dir={'jsonplus': 'jsonplus'},
     install_requires=[i.strip() for i in open('requirements.txt').readlines()],
     classifiers=[
         'Development Status :: 5 - Production/Stable',
