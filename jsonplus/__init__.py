@@ -1,10 +1,12 @@
 """Custom datatypes (like datetime) serialization to/from JSON."""
 
-__version__ = '0.3'
+__title__ = 'jsonplus'
+__version__ = '0.4'
 __author__ = 'Radomir Stevanovic'
 __author_email__ = 'radomir.stevanovic@gmail.com'
 __copyright__ = 'Copyright 2013 Radomir Stevanovic'
 __license__ = 'MIT'
+__url__ = 'https://github.com/randomir/jsonplus'
 
 
 import simplejson as json
