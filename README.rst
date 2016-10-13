@@ -56,3 +56,13 @@ Also, `set` and `complex`:
     
     >>> json_loads(_)
     [set([0, 1, 2]), (1+2j)]
+
+Alternatively, just treat it as a friendly drop-in replacement for `json`/`simplejson`.
+
+.. code-block:: python
+
+    >>> import jsonplus as json
+    >>> x = json.loads('{"a":1,"b":2}')
+    >>> y = json.dumps(x, indent=4)
+    >>> z = json.pretty(x)
+

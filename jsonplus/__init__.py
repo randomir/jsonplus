@@ -6,6 +6,9 @@ from dateutil.parser import parse as parse_datetime
 from functools import wraps, partial
 from operator import methodcaller
 
+__all__ = ["loads", "dumps", "pretty",
+           "json_loads", "json_dumps", "json_prettydump"]
+
 
 def getattrs(value, attrs):
     return {attr: getattr(value, attr) for attr in attrs}
@@ -63,3 +66,8 @@ def json_loads(*pa, **kw):
 
 def json_prettydump(x, sort_keys=True):
     return json_dumps(x, sort_keys=sort_keys, indent=4*' ', separators=(',', ': '))
+
+
+dumps = json_dumps
+loads = json_loads
+pretty = json_prettydump
