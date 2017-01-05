@@ -1,8 +1,4 @@
-.PHONY: build upload
-
-build:
-	python setup.py sdist
-	python setup.py bdist_wheel
+.PHONY: upload
 
 upload:
-	python setup.py sdist upload
+	python setup.py sdist bdist_wheel upload
