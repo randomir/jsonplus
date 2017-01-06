@@ -83,6 +83,10 @@ class TestJSONPlus(unittest.TestCase):
         s = set(range(10))
         self.assertEqual(self.dump_and_load(s), s)
 
+    def test_frozenset(self):
+        f = frozenset(range(10))
+        self.assertEqual(self.dump_and_load(f), f)
+
     def test_complex(self):
         c = 1 + 2j
         self.assertEqual(self.dump_and_load(c), c)
