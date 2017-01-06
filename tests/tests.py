@@ -79,6 +79,14 @@ class TestJSONPlus(unittest.TestCase):
         dt = timedelta(0, 1234567, 123)
         self.assertEqual(self.dump_and_load(dt), dt)
 
+    def test_set(self):
+        s = set(range(10))
+        self.assertEqual(self.dump_and_load(s), s)
+
+    def test_complex(self):
+        c = 1 + 2j
+        self.assertEqual(self.dump_and_load(c), c)
+
 
 if __name__ == '__main__':
     unittest.main()
