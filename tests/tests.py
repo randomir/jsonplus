@@ -12,6 +12,7 @@ import math
 from datetime import datetime, timedelta, date, time
 from decimal import Decimal
 from fractions import Fraction
+from collections import namedtuple
 
 
 class TestJSONPlus(unittest.TestCase):
@@ -117,6 +118,11 @@ class TestJSONPlus(unittest.TestCase):
     def test_tuple_explicit_empty(self):
         x = tuple()
         self.assertEqual(self.dump_and_load(x, tuple_as_array=False), x)
+
+    def test_namedtuple(self):
+        Point = namedtuple('Point', 'x y')
+        x = Point(3, 4)
+        self.assertEqual(self.dump_and_load(x, tuple_as_array=False, namedtuple_as_object=False), x)
 
 
 if __name__ == '__main__':

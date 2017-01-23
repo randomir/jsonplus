@@ -1,5 +1,8 @@
 """Custom datatypes (like datetime) serialization to/from JSON."""
 
+# TODO: introduce options to prefer: (a) exact coding *or* 
+# (b) cross-compat coding. Think of ``tuple`` and ``Decimal``.
+
 import simplejson as json
 from datetime import datetime, timedelta, date, time
 from dateutil.parser import parse as parse_datetime
@@ -7,15 +10,26 @@ from functools import wraps, partial
 from operator import methodcaller
 from decimal import Decimal
 from fractions import Fraction
+from collections import namedtuple
 
 __all__ = ["loads", "dumps", "pretty",
            "json_loads", "json_dumps", "json_prettydump"]
+
+
+def _dump_namedtuple(classname, obj):
+    return {"name": classname, "fields": list(obj._fields), "values": list(obj)}
+
+def _load_namedtuple(val):
+    cls = namedtuple(val['name'], val['fields'])
+    return cls(*val['values'])
 
 
 def getattrs(value, attrs):
     return {attr: getattr(value, attr) for attr in attrs}
 
 def _json_default(obj):
+    """Serialization handlers for types unsupported by `simplejson`.
+    """
     classname = type(obj).__name__
     handlers = {
         'datetime': methodcaller('isoformat'),
@@ -32,6 +46,9 @@ def _json_default(obj):
     if classname in handlers:
         return {"__class__": classname,
                 "__value__": handlers[classname](obj)}
+    elif isinstance(obj, tuple) and classname != 'tuple':
+        return {"__class__": "namedtuple",
+                "__value__": _dump_namedtuple(classname, obj)}
     raise TypeError(repr(obj) + " is not JSON serializable")
 
 
@@ -42,6 +59,8 @@ def kwargified(constructor):
     return kwargs_constructor
 
 def _json_object_hook(dict):
+    """Deserialization handlers for types unsupported by `simplejson`.
+    """
     classname = dict.get('__class__')
     handlers = {
         'datetime': parse_datetime,
@@ -53,7 +72,8 @@ def _json_object_hook(dict):
         'frozenset': frozenset,
         'complex': kwargified(complex),
         'Decimal': Decimal,
-        'Fraction': kwargified(Fraction)
+        'Fraction': kwargified(Fraction),
+        'namedtuple': _load_namedtuple,
     }
     if classname:
         constructor = handlers.get(classname)
@@ -66,6 +86,7 @@ def _json_object_hook(dict):
 
 def json_dumps(*pa, **kw):
     # set ``tuple_as_array=False`` to support exact tuple serialization
+    # set ``namedtuple_as_object=False`` *and* ``tuple_as_array=False`` to support exact namedtuple serialization
     kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default,
              'use_decimal': False}
     kwupt.update(kw)
