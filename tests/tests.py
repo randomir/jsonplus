@@ -7,9 +7,11 @@ sys.path.append(os.pardir)
 import unittest
 import jsonplus as json
 import textwrap
+import math
 
 from datetime import datetime, timedelta, date, time
 from decimal import Decimal
+from fractions import Fraction
 
 
 class TestJSONPlus(unittest.TestCase):
@@ -103,6 +105,10 @@ class TestJSONPlus(unittest.TestCase):
     def test_decimal_nan(self):
         x = Decimal('Nan')
         self.assertEqual(x.compare_total(self.dump_and_load(x)), Decimal('0'))
+
+    def test_fraction_normal(self):
+        x = Fraction(math.cos(math.pi/3))
+        self.assertEqual(self.dump_and_load(x), x)
 
 
 if __name__ == '__main__':

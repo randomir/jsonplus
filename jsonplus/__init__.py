@@ -6,6 +6,7 @@ from dateutil.parser import parse as parse_datetime
 from functools import wraps, partial
 from operator import methodcaller
 from decimal import Decimal
+from fractions import Fraction
 
 __all__ = ["loads", "dumps", "pretty",
            "json_loads", "json_dumps", "json_prettydump"]
@@ -25,6 +26,7 @@ def _json_default(obj):
         'frozenset': list,
         'complex': partial(getattrs, attrs=['real', 'imag']),
         'Decimal': str,
+        'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
     }
     if classname in handlers:
         return {"__class__": classname,
@@ -49,6 +51,7 @@ def _json_object_hook(dict):
         'frozenset': frozenset,
         'complex': kwargified(complex),
         'Decimal': Decimal,
+        'Fraction': kwargified(Fraction)
     }
     if classname:
         constructor = handlers.get(classname)
