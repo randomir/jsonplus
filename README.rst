@@ -24,23 +24,37 @@ Installation
     $ pip install jsonplus
 
 
-Examples
---------
+Usage
+-----
 
-Let's start with ``datetime``.
+You can treat ``jsonplus`` as a friendly *drop-in* replacement for ``json``/``simplejson``.
 
 .. code-block:: python
 
-    >>> from jsonplus import json_loads, json_dumps, json_prettydump
-    
+    >>> import jsonplus as json
+    >>>
+    >>> x = json.loads('{"a":1,"b":2}')
+    >>> y = json.dumps(x, indent=4)
+    >>> z = json.pretty(x)
+
+
+Examples
+--------
+
+Let's start with that beloved ``datetime``.
+
+.. code-block:: python
+
+    >>> import jsonplus as json
+
     >>> from datetime import datetime
-    >>> json_dumps({
+    >>> json.dumps({
     ...     "x": [4,3],
     ...     "t": datetime.now()
     ... })
     '{"x":[4,3],"t":{"__class__":"datetime","__value__":"2013-09-06T23:38:55.819791"}}'
     
-    >>> json_loads(_)
+    >>> json.loads(_)
     {u'x': [4, 3], u't': datetime.datetime(2013, 9, 6, 23, 38, 55, 819791)}
 
 Similarly for other ``datetime.*`` types, like ``timedelta``, ``date``, and ``time``:
@@ -48,7 +62,7 @@ Similarly for other ``datetime.*`` types, like ``timedelta``, ``date``, and ``ti
 .. code-block:: python
 
     >>> from datetime import timedelta, date, time
-    >>> print json_prettydump({"dt": timedelta(0, 1234567, 123), "d": date.today(), "t": datetime.now().time()})
+    >>> print json.pretty({"dt": timedelta(0, 1234567, 123), "d": date.today(), "t": datetime.now().time()})
     {
         "d": {
             "__class__": "date",
@@ -72,18 +86,9 @@ Also, ``set`` and ``complex``:
 
 .. code-block:: python
 
-    >>> json_dumps([set(range(3)), 1+2j])
+    >>> json.dumps([set(range(3)), 1+2j])
     '[{"__class__":"set","__value__":[0,1,2]},{"__class__":"complex","__value__":{"real":1.0,"imag":2.0}}]'
     
-    >>> json_loads(_)
+    >>> json.loads(_)
     [set([0, 1, 2]), (1+2j)]
-
-Alternatively, just treat it as a friendly drop-in replacement for ``json``/``simplejson``.
-
-.. code-block:: python
-
-    >>> import jsonplus as json
-    >>> x = json.loads('{"a":1,"b":2}')
-    >>> y = json.dumps(x, indent=4)
-    >>> z = json.pretty(x)
 
