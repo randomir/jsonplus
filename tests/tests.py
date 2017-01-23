@@ -9,6 +9,7 @@ import jsonplus as json
 import textwrap
 
 from datetime import datetime, timedelta, date, time
+from decimal import Decimal
 
 
 class TestJSONPlus(unittest.TestCase):
@@ -90,6 +91,18 @@ class TestJSONPlus(unittest.TestCase):
     def test_complex(self):
         c = 1 + 2j
         self.assertEqual(self.dump_and_load(c), c)
+
+    def test_decimal_normal(self):
+        x = Decimal('1.23')
+        self.assertEqual(x.compare_total(self.dump_and_load(x)), Decimal('0'))
+
+    def test_decimal_inf(self):
+        x = Decimal('Infinity')
+        self.assertEqual(x.compare_total(self.dump_and_load(x)), Decimal('0'))
+
+    def test_decimal_nan(self):
+        x = Decimal('Nan')
+        self.assertEqual(x.compare_total(self.dump_and_load(x)), Decimal('0'))
 
 
 if __name__ == '__main__':

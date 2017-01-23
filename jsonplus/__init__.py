@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, date, time
 from dateutil.parser import parse as parse_datetime
 from functools import wraps, partial
 from operator import methodcaller
+from decimal import Decimal
 
 __all__ = ["loads", "dumps", "pretty",
            "json_loads", "json_dumps", "json_prettydump"]
@@ -22,7 +23,8 @@ def _json_default(obj):
         'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
         'set': list,
         'frozenset': list,
-        'complex': partial(getattrs, attrs=['real', 'imag'])
+        'complex': partial(getattrs, attrs=['real', 'imag']),
+        'Decimal': str,
     }
     if classname in handlers:
         return {"__class__": classname,
@@ -45,7 +47,8 @@ def _json_object_hook(dict):
         'time': lambda v: parse_datetime(v).timetz(),
         'set': set,
         'frozenset': frozenset,
-        'complex': kwargified(complex)
+        'complex': kwargified(complex),
+        'Decimal': Decimal,
     }
     if classname:
         constructor = handlers.get(classname)
@@ -57,7 +60,8 @@ def _json_object_hook(dict):
 
 
 def json_dumps(*pa, **kw):
-    kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default}
+    kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default,
+             'use_decimal': False}
     kwupt.update(kw)
     return json.dumps(*pa, **kwupt)
 
