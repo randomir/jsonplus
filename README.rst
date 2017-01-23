@@ -3,6 +3,27 @@ JSON+
 
 Serialization of Python types to JSON done right.
 
+No more errors like::
+
+    TypeError: datetime.datetime(...) is not JSON serializable
+
+In addition to (de-)serialization of basic types (provided by simplejson_), jsonplus_
+provides support for **exact** (de-)serialization of other commonly used types, like:
+``tuple``/``namedtuple``, ``set``/``frozenset``, ``complex``/``decimal.Decimal``/``fractions.Fraction``,
+and ``datetime``/``date``/``time``/``timedelta``.
+
+.. _simplejson: https://simplejson.readthedocs.io/en/latest/#encoders-and-decoders
+.. _jsonplus: https://pypi.python.org/pypi/jsonplus/
+
+
+Installation
+------------
+
+``jsonplus`` is available as Python package. To install, simply type::
+
+    $ pip install jsonplus
+
+
 Examples
 --------
 
