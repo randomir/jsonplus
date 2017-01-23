@@ -22,6 +22,7 @@ def _json_default(obj):
         'date': methodcaller('isoformat'),
         'time': methodcaller('isoformat'),
         'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
+        'tuple': list,
         'set': list,
         'frozenset': list,
         'complex': partial(getattrs, attrs=['real', 'imag']),
@@ -44,9 +45,10 @@ def _json_object_hook(dict):
     classname = dict.get('__class__')
     handlers = {
         'datetime': parse_datetime,
-        'timedelta': kwargified(timedelta),
         'date': lambda v: parse_datetime(v).date(),
         'time': lambda v: parse_datetime(v).timetz(),
+        'timedelta': kwargified(timedelta),
+        'tuple': tuple,
         'set': set,
         'frozenset': frozenset,
         'complex': kwargified(complex),
@@ -63,6 +65,7 @@ def _json_object_hook(dict):
 
 
 def json_dumps(*pa, **kw):
+    # set ``tuple_as_array=False`` to support exact tuple serialization
     kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default,
              'use_decimal': False}
     kwupt.update(kw)

@@ -110,6 +110,14 @@ class TestJSONPlus(unittest.TestCase):
         x = Fraction(math.cos(math.pi/3))
         self.assertEqual(self.dump_and_load(x), x)
 
+    def test_tuple_explicit(self):
+        x = (1, 2, 3)
+        self.assertEqual(self.dump_and_load(x, tuple_as_array=False), x)
+
+    def test_tuple_explicit_empty(self):
+        x = tuple()
+        self.assertEqual(self.dump_and_load(x, tuple_as_array=False), x)
+
 
 if __name__ == '__main__':
     unittest.main()
