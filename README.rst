@@ -27,7 +27,7 @@ Installation
 Examples
 --------
 
-Let's start with `datetime`.
+Let's start with ``datetime``.
 
 .. code-block:: python
 
@@ -43,7 +43,7 @@ Let's start with `datetime`.
     >>> json_loads(_)
     {u'x': [4, 3], u't': datetime.datetime(2013, 9, 6, 23, 38, 55, 819791)}
 
-Continue with other `datetime.*` types, like `timedelta`, `date`, and `time`.
+Similarly for other ``datetime.*`` types, like ``timedelta``, ``date``, and ``time``:
 
 .. code-block:: python
 
@@ -68,7 +68,7 @@ Continue with other `datetime.*` types, like `timedelta`, `date`, and `time`.
         }
     }
 
-Also, `set` and `complex`:
+Also, ``set`` and ``complex``:
 
 .. code-block:: python
 
@@ -78,7 +78,7 @@ Also, `set` and `complex`:
     >>> json_loads(_)
     [set([0, 1, 2]), (1+2j)]
 
-Alternatively, just treat it as a friendly drop-in replacement for `json`/`simplejson`.
+Alternatively, just treat it as a friendly drop-in replacement for ``json``/``simplejson``.
 
 .. code-block:: python
 
