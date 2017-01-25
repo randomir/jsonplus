@@ -1,9 +1,9 @@
 JSON+
 =====
 
-Serialization of Python types to JSON done right.
+Serialization of Python types to JSON that "just works".
 
-No more errors like::
+Forget errors like::
 
     TypeError: datetime.datetime(...) is not JSON serializable
 
@@ -11,6 +11,11 @@ In addition to (de-)serialization of basic types (provided by simplejson_), json
 provides support for **exact** (de-)serialization of other commonly used types, like:
 ``tuple``/``namedtuple``, ``set``/``frozenset``, ``complex``/``decimal.Decimal``/``fractions.Fraction``,
 and ``datetime``/``date``/``time``/``timedelta``.
+
+If the exact representation of types is not your cup of tea, and all you wish
+for is ``json.dumps`` to work on your data structure with non-basic types,
+accepting the loss of "type-precision" along the way, than you should use the
+**compatibility** mode (``jsonplus.prefer_compat()``).
 
 .. _simplejson: https://simplejson.readthedocs.io/en/latest/#encoders-and-decoders
 .. _jsonplus: https://pypi.python.org/pypi/jsonplus/
@@ -98,7 +103,9 @@ Also, ``set`` and ``complex``:
 
     >>> from collections import namedtuple
     >>> Point = namedtuple('Point', ['x', 'y'])
-    >>> json.dumps({"vect": (1, 2, 3), "dot": Point(3, 4)})
+
+    >>> data = json.pretty({"vect": (1, 2, 3), "dot": Point(3, 4)})
+    >>> print(data)
     {
         "dot": {
             "__class__": "namedtuple",
@@ -124,5 +131,64 @@ Also, ``set`` and ``complex``:
         }
     }
 
-    >>> json.loads(_)
+    >>> json.loads(data)
     {'vect': (1, 2, 3), 'dot': Point(x=3, y=4)}
+
+
+Compatibility mode
+------------------
+
+All types supported in the exact mode are also supported in the compatibility
+mode. JSON representation differs, however.
+
+In the exact mode, *type* and *value* are encoded with ``JSON Object``'s
+``__class__`` and ``__value__`` keys, while in the compatibility mode, values
+are "rounded" to the closest JSON type.
+
+For example, ``tuple`` and ``set`` are represented with the ``JSON Array``,
+and ``namedtuple`` is coded as ``JSON Object``. ``Decimal`` is represented as
+``JSON Number`` with arbitrary precision (which is lost if decoded as a
+``float``).
+
+To switch between **exact** and **compatibility** mode, use ``thread-local``
+functions ``prefer_exact()`` and ``prefer_compat()``:
+
+.. code-block:: python
+
+    >>> import jsonplus
+
+    >>> jsonplus.prefer_compat()
+    # or:
+    >>> jsonplus.prefer(jsonplus.COMPAT)
+
+    # to go back to exact:
+    >>> jsonplus.prefer_exact()
+
+The above ``tuple``/``namedtuple`` example in compatibility coding mode:
+
+.. code-block:: python
+
+    >>> json.prefer_compat()
+    >>> print(json.pretty({"vect": (1, 2, 3), "dot": Point(3, 4)}))
+    {
+        "point": {
+            "x": 3,
+            "y": 4
+        },
+        "vector": [
+            1,
+            2,
+            3
+        ]
+    }
+
+Dates and times are represented with ISO8601 strings:
+
+.. code-block:: python
+
+    >>> json.prefer_compat()
+    >>> json.dumps({"now": datetime.now()})
+    '{"now":"2017-01-26T00:37:40.293963"}'
+
+So, to be able to decode it as date/time, some additional context has to be
+provided to the decoder.
