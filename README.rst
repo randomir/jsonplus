@@ -142,29 +142,30 @@ All types supported in the exact mode are also supported in the compatibility
 mode. JSON representation differs, however.
 
 In the exact mode, *type* and *value* are encoded with ``JSON Object``'s
-``__class__`` and ``__value__`` keys, while in the compatibility mode, values
-are "rounded" to the closest JSON type.
+``__class__`` and ``__value__`` keys, while in the compatibility mode, 
+**values are "rounded" to the closest JSON type**.
 
-For example, ``tuple`` and ``set`` are represented with the ``JSON Array``,
-and ``namedtuple`` is coded as ``JSON Object``. ``Decimal`` is represented as
-``JSON Number`` with arbitrary precision (which is lost if decoded as a
-``float``).
+For example, ``tuple``s and ``set``s are represented with ``JSON Array``s, and
+``namedtuple``s are coded as plain ``JSON Object``s. ``Decimal``s are
+represented as ``JSON Number``s with arbitrary precision (which is lost if
+decoded as ``float``).
 
-To switch between **exact** and **compatibility** mode, use ``thread-local``
-functions ``prefer_exact()`` and ``prefer_compat()``:
+To switch between the **exact** and **compatibility** modes, use the  (thread-
+local) functions ``prefer_exact()`` and ``prefer_compat()``:
 
 .. code-block:: python
 
-    >>> import jsonplus
+    >>> import jsonplus as json
 
-    >>> jsonplus.prefer_compat()
+    >>> json.prefer_compat()
     # or:
-    >>> jsonplus.prefer(jsonplus.COMPAT)
+    >>> json.prefer(json.COMPAT)
 
-    # to go back to exact:
-    >>> jsonplus.prefer_exact()
+    # to go back to (default) exact coding:
+    >>> json.prefer_exact()
 
-The above ``tuple``/``namedtuple`` example in compatibility coding mode:
+The above ``tuple``/``namedtuple`` example run in compatibility coding mode
+results with:
 
 .. code-block:: python
 
