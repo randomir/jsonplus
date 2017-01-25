@@ -32,7 +32,7 @@ You can treat ``jsonplus`` as a friendly *drop-in* replacement for ``json``/``si
 .. code-block:: python
 
     >>> import jsonplus as json
-    >>>
+
     >>> x = json.loads('{"a":1,"b":2}')
     >>> y = json.dumps(x, indent=4)
     >>> z = json.pretty(x)
@@ -62,7 +62,7 @@ Similarly for other ``datetime.*`` types, like ``timedelta``, ``date``, and ``ti
 .. code-block:: python
 
     >>> from datetime import timedelta, date, time
-    >>> print json.pretty({"dt": timedelta(0, 1234567, 123), "d": date.today(), "t": datetime.now().time()})
+    >>> print(json.pretty({"dt": timedelta(0, 1234567, 123), "d": date.today(), "t": datetime.now().time()}))
     {
         "d": {
             "__class__": "date",
@@ -92,3 +92,37 @@ Also, ``set`` and ``complex``:
     >>> json.loads(_)
     [set([0, 1, 2]), (1+2j)]
 
+``tuple`` and ``namedtuple`` are also preserved:
+
+.. code-block:: python
+
+    >>> from collections import namedtuple
+    >>> Point = namedtuple('Point', ['x', 'y'])
+    >>> json.dumps({"vect": (1, 2, 3), "dot": Point(3, 4)})
+    {
+        "dot": {
+            "__class__": "namedtuple",
+            "__value__": {
+                "fields": [
+                    "x",
+                    "y"
+                ],
+                "name": "Point",
+                "values": [
+                    3,
+                    4
+                ]
+            }
+        },
+        "vect": {
+            "__class__": "tuple",
+            "__value__": [
+                1,
+                2,
+                3
+            ]
+        }
+    }
+
+    >>> json.loads(_)
+    {'vect': (1, 2, 3), 'dot': Point(x=3, y=4)}
