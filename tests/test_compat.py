@@ -15,11 +15,9 @@ from fractions import Fraction
 from collections import namedtuple
 
 
-json.prefer_compat()
-
-
 class TestJSONPlus(unittest.TestCase):
     def setUp(self):
+        json.prefer_compat()
         self.basic = {
             "a": "str",
             "i": 123,
