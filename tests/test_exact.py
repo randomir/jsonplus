@@ -15,6 +15,9 @@ from fractions import Fraction
 from collections import namedtuple
 
 
+json.prefer_exact()
+
+
 class TestJSONPlus(unittest.TestCase):
     def setUp(self):
         self.basic = {
@@ -113,16 +116,16 @@ class TestJSONPlus(unittest.TestCase):
 
     def test_tuple_explicit(self):
         x = (1, 2, 3)
-        self.assertEqual(self.dump_and_load(x, tuple_as_array=False), x)
+        self.assertEqual(self.dump_and_load(x), x)
 
     def test_tuple_explicit_empty(self):
         x = tuple()
-        self.assertEqual(self.dump_and_load(x, tuple_as_array=False), x)
+        self.assertEqual(self.dump_and_load(x), x)
 
     def test_namedtuple(self):
         Point = namedtuple('Point', 'x y')
         x = Point(3, 4)
-        self.assertEqual(self.dump_and_load(x, tuple_as_array=False, namedtuple_as_object=False), x)
+        self.assertEqual(self.dump_and_load(x), x)
 
 
 if __name__ == '__main__':
