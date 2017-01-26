@@ -62,6 +62,7 @@ prefer_exact()
 def _dump_namedtuple(classname, obj):
     return {"name": classname, "fields": list(obj._fields), "values": list(obj)}
 
+
 def _load_namedtuple(val):
     cls = namedtuple(val['name'], val['fields'])
     return cls(*val['values'])
@@ -69,6 +70,7 @@ def _load_namedtuple(val):
 
 def getattrs(value, attrs):
     return {attr: getattr(value, attr) for attr in attrs}
+
 
 def _json_default_exact(obj):
     """Serialization handlers for types unsupported by `simplejson` 
@@ -96,6 +98,7 @@ def _json_default_exact(obj):
                 "__value__": _dump_namedtuple(classname, obj)}
     raise TypeError(repr(obj) + " is not JSON serializable")
 
+
 def _json_default_compat(obj):
     classname = type(obj).__name__
     handlers = {
@@ -119,6 +122,7 @@ def kwargified(constructor):
     def kwargs_constructor(kwargs):
         return constructor(**kwargs)
     return kwargs_constructor
+
 
 def _json_object_hook(dict):
     """Deserialization handlers for types unsupported by `simplejson`.
@@ -155,16 +159,21 @@ def json_dumps(*pa, **kw):
         'namedtuple_as_object': False   # don't call `_asdict` on `namedtuple`
     }
     kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default_compat}
-    if _local.coding == EXACT:
+
+    # preferred coding manual override with `exact=False`
+    if kw.pop('exact', _local.coding == EXACT):
         kwupt.update(kwexact)
+    
     # allow user to override
     kwupt.update(kw)
     return json.dumps(*pa, **kwupt)
+
 
 def json_loads(*pa, **kw):
     kwupt = {'object_hook': _json_object_hook}
     kwupt.update(kw)
     return json.loads(*pa, **kwupt)
+
 
 def json_prettydump(x, sort_keys=True):
     return json_dumps(x, sort_keys=sort_keys, indent=4*' ', separators=(',', ': '))
