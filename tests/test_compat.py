@@ -13,6 +13,7 @@ from datetime import datetime, timedelta, date, time
 from decimal import Decimal
 from fractions import Fraction
 from collections import namedtuple
+import uuid
 
 
 class TestJSONPlus(unittest.TestCase):
@@ -125,6 +126,13 @@ class TestJSONPlus(unittest.TestCase):
         x = Point(3, 4)
         self.assertEqual(self.dump_and_load(x), x._asdict())
 
+    def test_uuid1(self):
+        x = uuid.uuid1()
+        self.assertEqual(self.dump_and_load(x), str(x))
+
+    def test_uuid4(self):
+        x = uuid.uuid4()
+        self.assertEqual(self.dump_and_load(x), str(x))
 
 if __name__ == '__main__':
     unittest.main()

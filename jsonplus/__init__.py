@@ -12,6 +12,7 @@ from decimal import Decimal
 from fractions import Fraction
 from collections import namedtuple
 import threading
+import uuid
 
 __all__ = ["loads", "dumps", "pretty",
            "json_loads", "json_dumps", "json_prettydump"]
@@ -85,6 +86,7 @@ def _json_default_exact(obj):
         'complex': partial(getattrs, attrs=['real', 'imag']),
         'Decimal': str,
         'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
+        'UUID': partial(getattrs, attrs=['hex']),
     }
     if classname in handlers:
         return {"__class__": classname,
@@ -105,6 +107,7 @@ def _json_default_compat(obj):
         'frozenset': list,
         'complex': partial(getattrs, attrs=['real', 'imag']),
         'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
+        'UUID': str
     }
     if classname in handlers:
         return handlers[classname](obj)
@@ -133,6 +136,7 @@ def _json_object_hook(dict):
         'Decimal': Decimal,
         'Fraction': kwargified(Fraction),
         'namedtuple': _load_namedtuple,
+        'UUID': kwargified(uuid.UUID)
     }
     if classname:
         constructor = handlers.get(classname)
