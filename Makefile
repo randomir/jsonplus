@@ -1,4 +1,7 @@
-.PHONY: upload
+.PHONY: test upload
 
-upload:
+test:
+	cd tests/ && pytest
+
+upload: test
 	python setup.py sdist bdist_wheel upload
