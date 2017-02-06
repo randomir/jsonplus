@@ -13,8 +13,8 @@ provides support for **exact** (de-)serialization of other commonly used types, 
 and ``datetime``/``date``/``time``/``timedelta``.
 
 If the exact representation of types is not your cup of tea, and all you wish
-for is ``json.dumps`` to work on your data structure with non-basic types,
-accepting the loss of "type-precision" along the way, than you should use the
+for is the ``json.dumps`` to work on your data structure with non-basic types,
+accepting the loss of "type-precision" along the way, than you can use the
 **compatibility** mode (``jsonplus.prefer_compat()``).
 
 .. _simplejson: https://simplejson.readthedocs.io/en/latest/#encoders-and-decoders
@@ -24,7 +24,7 @@ accepting the loss of "type-precision" along the way, than you should use the
 Installation
 ------------
 
-``jsonplus`` is available as Python package. To install, simply type::
+``jsonplus`` is available as a Python package. To install it, simply type::
 
     $ pip install jsonplus
 
@@ -143,15 +143,16 @@ mode. JSON representation differs, however.
 
 In the exact mode, *type* and *value* are encoded with ``JSON Object``'s
 ``__class__`` and ``__value__`` keys, while in the compatibility mode, 
-**values are "rounded" to the closest JSON type**.
+**values are "rounded off" to the closest JSON type**.
 
-For example, ``tuple``s and ``set``s are represented with ``JSON Array``s, and
-``namedtuple``s are coded as plain ``JSON Object``s. ``Decimal``s are
-represented as ``JSON Number``s with arbitrary precision (which is lost if
+For example, ``tuple`` and ``set`` are represented with ``JSON Array``, and
+``namedtuple`` is coded as a plain ``JSON Object``. ``Decimal`` is
+represented as ``JSON Number`` with arbitrary precision (which is lost if
 decoded as ``float``).
 
-To switch between the **exact** and **compatibility** modes, use the  (thread-
-local) functions ``prefer_exact()`` and ``prefer_compat()``:
+To switch between the **exact** and **compatibility** modes, use the 
+(thread-local) functions ``prefer_exact()`` and ``prefer_compat()``, or call
+``dumps(..., exact=False)``:
 
 .. code-block:: python
 
@@ -160,16 +161,19 @@ local) functions ``prefer_exact()`` and ``prefer_compat()``:
     >>> json.prefer_compat()
     # or:
     >>> json.prefer(json.COMPAT)
+    # per-instance override:
+    >>> json.dumps(obj, exact=False)
 
     # to go back to (default) exact coding:
     >>> json.prefer_exact()
 
-The above ``tuple``/``namedtuple`` example run in compatibility coding mode
-results with:
+The above ``tuple``/``namedtuple``/``datetime`` examples run in the compatibility 
+coding mode result with:
 
 .. code-block:: python
 
     >>> json.prefer_compat()
+
     >>> print(json.pretty({"vect": (1, 2, 3), "dot": Point(3, 4)}))
     {
         "point": {
@@ -183,13 +187,8 @@ results with:
         ]
     }
 
-Dates and times are represented with ISO8601 strings:
-
-.. code-block:: python
-
-    >>> json.prefer_compat()
     >>> json.dumps({"now": datetime.now()})
     '{"now":"2017-01-26T00:37:40.293963"}'
 
-So, to be able to decode it as date/time, some additional context has to be
-provided to the decoder.
+So, to be able to properly decode values in the compatibility mode, some 
+additional context will have to be provided to the decoder.
