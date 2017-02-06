@@ -44,6 +44,7 @@ __all__ = ["loads", "dumps", "pretty",
 
 EXACT = 1
 COMPAT = 2
+DEFAULT = EXACT
 
 _local = threading.local()
 
@@ -55,8 +56,6 @@ def prefer_exact():
 
 def prefer_compat():
     prefer(COMPAT)
-
-prefer_exact()
 
 
 def _dump_namedtuple(classname, obj):
@@ -161,7 +160,7 @@ def json_dumps(*pa, **kw):
     kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default_compat}
 
     # preferred coding manual override with `exact=False`
-    if kw.pop('exact', _local.coding == EXACT):
+    if kw.pop('exact', getattr(_local, 'coding', DEFAULT) == EXACT):
         kwupt.update(kwexact)
     
     # allow user to override
