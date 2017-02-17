@@ -150,7 +150,7 @@ def _json_object_hook(dict):
     return dict
 
 
-def json_dumps(*pa, **kw):
+def dumps(*pa, **kw):
     kwexact = {
         'default': _json_default_exact,
         'use_decimal': False,           # don't encode `Decimal` as JSON's `Number`
@@ -159,7 +159,7 @@ def json_dumps(*pa, **kw):
     }
     kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default_compat}
 
-    # preferred coding manual override with `exact=False`
+    # manual override of the preferred coding with `exact=False`
     if kw.pop('exact', getattr(_local, 'coding', DEFAULT) == EXACT):
         kwupt.update(kwexact)
     
@@ -168,16 +168,16 @@ def json_dumps(*pa, **kw):
     return json.dumps(*pa, **kwupt)
 
 
-def json_loads(*pa, **kw):
+def loads(*pa, **kw):
     kwupt = {'object_hook': _json_object_hook}
     kwupt.update(kw)
     return json.loads(*pa, **kwupt)
 
 
-def json_prettydump(x, sort_keys=True):
-    return json_dumps(x, sort_keys=sort_keys, indent=4*' ', separators=(',', ': '))
+def pretty(x, sort_keys=True):
+    return dumps(x, sort_keys=sort_keys, indent=4*' ', separators=(',', ': '))
 
 
-dumps = json_dumps
-loads = json_loads
-pretty = json_prettydump
+json_dumps = dumps
+json_loads = loads
+json_prettydump = pretty
