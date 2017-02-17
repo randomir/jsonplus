@@ -3,12 +3,12 @@ from setuptools import setup
 
 setup(
     name='Flask-JSONPlus',
-    version='0.0.1',
-    description="Flask extension for non-basic types' serialization to JSON via JSONPlus lib.",
-    #long_description=open('README.rst').read(),
+    version='0.0.2',
+    description="Flask extension for non-basic types' serialization to JSON via jsonplus lib.",
+    long_description=open('README.rst').read(),
     author='Radomir Stevanovic',
     author_email='radomir.stevanovic@gmail.com',
-    url='https://github.com/randomir/jsonplus/python-flask',
+    url='https://github.com/randomir/jsonplus/tree/master/python-flask',
     license='MIT',
 
     py_modules=['flask_jsonplus'],
