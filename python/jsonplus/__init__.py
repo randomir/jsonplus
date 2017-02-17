@@ -44,7 +44,7 @@ __all__ = ["loads", "dumps", "pretty",
 
 EXACT = 1
 COMPAT = 2
-DEFAULT = EXACT
+CODING_DEFAULT = EXACT
 
 _local = threading.local()
 
@@ -150,32 +150,78 @@ def _json_object_hook(dict):
     return dict
 
 
-def dumps(*pa, **kw):
-    kwexact = {
-        'default': _json_default_exact,
-        'use_decimal': False,           # don't encode `Decimal` as JSON's `Number`
-        'tuple_as_array': False,        # don't encode `tuple` as `Array`
-        'namedtuple_as_object': False   # don't call `_asdict` on `namedtuple`
-    }
-    kwupt = {'separators': (',', ':'), 'for_json': True, 'default': _json_default_compat}
 
-    # manual override of the preferred coding with `exact=False`
-    if kw.pop('exact', getattr(_local, 'coding', DEFAULT) == EXACT):
-        kwupt.update(kwexact)
+def _encoder_default_args(kw):
+    """Shape default arguments for encoding functions."""
     
-    # allow user to override
-    kwupt.update(kw)
-    return json.dumps(*pa, **kwupt)
+    # manual override of the preferred coding with `exact=False`
+    if kw.pop('exact', getattr(_local, 'coding', CODING_DEFAULT) == EXACT):
+        # settings necessary for the "exact coding"
+        kw.update({
+            'default': _json_default_exact,
+            'use_decimal': False,           # don't encode `Decimal` as JSON's `Number`
+            'tuple_as_array': False,        # don't encode `tuple` as `Array`
+            'namedtuple_as_object': False   # don't call `_asdict` on `namedtuple`
+        })
+    else:
+        # settings for the "compatibility coding"
+        kw.update({
+            'default': _json_default_compat,
+        })
+
+    # NOTE: if called from ``simplejson.dumps()`` with ``cls=JSONEncoder``,
+    # we will receive all kw set to simplejson defaults -- and our defaults for
+    # ``separators`` and ``for_json`` will not be applied. In contrast, they
+    # are applied when called from ``jsonplus.dumps()``, unless user explicitly
+    # sets some of those.
+    # This causes inconsistent behaviour between ``dumps()`` and ``JSONEncoder()``.
+
+    # prefer compact json repr
+    kw.setdefault('separators', (',', ':'))
+
+    # allow objects to provide json serialization on its behalf
+    kw.setdefault('for_json', True)
+
+
+def _decoder_default_args(kw):
+    """Shape default arguments for decoding functions."""
+
+    kw.update({'object_hook': _json_object_hook})
+
+
+
+class JSONEncoder(json.JSONEncoder):
+    def __init__(self, **kw):
+        """Constructor for simplejson.JSONEncoder, with defaults overriden
+        for jsonplus.
+        """
+        _encoder_default_args(kw)
+        super(JSONEncoder, self).__init__(**kw)
+
+
+class JSONDecoder(json.JSONDecoder):
+    def __init__(self, **kw):
+        """Constructor for simplejson.JSONDecoder, with defaults overriden
+        for jsonplus.
+        """
+        _decoder_default_args(kw)
+        super(JSONDecoder, self).__init__(**kw)
+
+
+
+def dumps(*pa, **kw):
+    _encoder_default_args(kw)
+    return json.dumps(*pa, **kw)
 
 
 def loads(*pa, **kw):
-    kwupt = {'object_hook': _json_object_hook}
-    kwupt.update(kw)
-    return json.loads(*pa, **kwupt)
+    _decoder_default_args(kw)
+    return json.loads(*pa, **kw)
 
 
 def pretty(x, sort_keys=True):
     return dumps(x, sort_keys=sort_keys, indent=4*' ', separators=(',', ': '))
+
 
 
 json_dumps = dumps
