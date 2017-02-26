@@ -221,8 +221,11 @@ def loads(*pa, **kw):
     return json.loads(*pa, **kw)
 
 
-def pretty(x, sort_keys=True):
-    return dumps(x, sort_keys=sort_keys, indent=4*' ', separators=(',', ': '))
+def pretty(x, sort_keys=True, indent=4*' ', separators=(',', ': '), **kw):
+    kw.setdefault('sort_keys', sort_keys)
+    kw.setdefault('indent', indent)
+    kw.setdefault('separators', separators)
+    return dumps(x, **kw)
 
 
 
