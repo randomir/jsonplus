@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='Flask-JSONPlus',
-    version='0.0.2',
+    version='0.0.3',
     description="Flask extension for non-basic types' serialization to JSON via jsonplus lib.",
     long_description=open('README.rst').read(),
     author='Radomir Stevanovic',
