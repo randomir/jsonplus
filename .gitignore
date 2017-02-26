@@ -2,6 +2,7 @@ env/
 build/
 dist/
 .cache/
+.eggs/
 *.egg-info/
 *.pyc
 *.*~
