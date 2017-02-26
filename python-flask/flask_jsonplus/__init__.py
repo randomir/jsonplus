@@ -30,3 +30,15 @@ class FlaskJSONPlus(object):
 
         app.json_encoder = JSONEncoder
         app.json_decoder = jsonplus.JSONDecoder
+
+
+    # interface to common ``jsonplus`` functions
+
+    def dumps(*pa, **kw):
+        return jsonplus.dumps(*pa, **kw)
+
+    def loads(*pa, **kw):
+        return jsonplus.loads(*pa, **kw)
+
+    def pretty(obj, **kw):
+        return jsonplus.pretty(obj, **kw)

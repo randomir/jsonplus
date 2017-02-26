@@ -9,7 +9,7 @@ from flask_jsonplus import FlaskJSONPlus
 app = Flask(__name__)
 app.config['JSONPLUS_EXACT'] = True
 
-FlaskJSONPlus(app)
+jsonplus = FlaskJSONPlus(app)
 
 
 @app.route('/')
