@@ -7,7 +7,7 @@ Django extension for non-basic types' serialization to JSON via jsonplus_ lib.
 
 
 Install
-=======
+-------
 
 Install from PyPI::
 
@@ -25,7 +25,7 @@ Add to your ``settings.py``:
 
 
 Usage
-=====
+-----
 
 To use ``jsonplus`` for database values (de-)serialization, use the
 ``JSONPlusField``:

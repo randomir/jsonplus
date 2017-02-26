@@ -7,7 +7,7 @@ Flask extension for non-basic types' serialization to JSON via jsonplus_ lib.
 
 
 Install
-=======
+-------
 
 Install from PyPI::
 
@@ -27,7 +27,7 @@ Enable in your Flask app (probably your ``app/__init__.py``):
 
 
 Usage
-=====
+-----
 
 After you enable FlaskJSONPlus, Flask will start to use ``jsonplus`` internally
 for JSON (de-)serialization. For example, ``jsonify`` will properly serialize
