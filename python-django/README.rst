@@ -41,4 +41,4 @@ To use ``jsonplus`` for database values (de-)serialization, use the
         basic_data = JSONField()
 
         # stores datetime, namedtuple, set, decimal, complex...
-        richdata = JSONPlusField()
+        rich_data = JSONPlusField()
