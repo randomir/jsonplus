@@ -198,5 +198,19 @@ class TestJSONPlus(unittest.TestCase):
         self.assertEqual(b, a)
         self.assertEqual(b.version, 4)
 
+    def test_inf_representation(self):
+        a = json.dumps(float("inf"))
+        # TODO: we want this:
+        #b = '{"__class__":"float","__value__":"inf"}'
+        # unfortunately, with current version of simplejson, all we can get is:
+        b = 'Infinity'
+        self.assertEqual(b, a)
+
+    def test_inf_reconstruction(self):
+        a = float("inf")
+        b = self.dump_and_load(a)
+        self.assertEqual(b, a)
+
+
 if __name__ == '__main__':
     unittest.main()

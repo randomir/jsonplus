@@ -167,6 +167,8 @@ def _encoder_default_args(kw):
         # settings for the "compatibility coding"
         kw.update({
             'default': _json_default_compat,
+            'ignore_nan': True      # be compliant with the ECMA-262 specification:
+                                    # serialize nan/inf as null
         })
 
     # NOTE: if called from ``simplejson.dumps()`` with ``cls=JSONEncoder``,

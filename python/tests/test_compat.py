@@ -177,5 +177,11 @@ class TestJSONPlus(unittest.TestCase):
         x = uuid.uuid4()
         self.assertEqual(self.dump_and_load(x), str(x))
 
+    def test_inf_representation(self):
+        a = json.dumps(float("inf"))
+        b = 'null'
+        self.assertEqual(b, a)
+
+
 if __name__ == '__main__':
     unittest.main()
