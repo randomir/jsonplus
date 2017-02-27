@@ -7,10 +7,10 @@ out of the box (batteries included).
 So far, modules (packages) for Python_, Flask_ and Django_ are implemented, and
 they support (de-)serialization of types like:
 
-    - ``tuple`` and ``namedtuple``
-    - ``set`` and ``frozenset``
-    - ``complex``, ``Decimal``, and ``Fraction``
-    - ``datetime``, ``date``, ``time``, and ``timedelta``
+- ``tuple`` and ``namedtuple``
+- ``set`` and ``frozenset``
+- ``complex``, ``Decimal``, and ``Fraction``
+- ``datetime``, ``date``, ``time``, and ``timedelta``
 
 (in addition to basic JSON types).
 
