@@ -10,8 +10,8 @@ setup(
     author_email='radomir.stevanovic@gmail.com',
     url='https://github.com/randomir/jsonplus/tree/master/python-django',
     license='MIT',
-
-    py_modules=['django_jsonplus'],
+    packages=['django_jsonplus'],
+    package_dir={'django_jsonplus': 'django_jsonplus'},
     zip_safe=False,
     include_package_data=True,
     platforms='any',
