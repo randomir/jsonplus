@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='django-jsonplus',
-    version='0.1.0',
+    version='0.1.1',
     description="Django extension for non-basic types' serialization to JSON via jsonplus lib.",
     long_description=open('README.rst').read(),
     author='Radomir Stevanovic',
