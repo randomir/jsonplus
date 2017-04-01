@@ -153,7 +153,7 @@ class TestJSONPlus(unittest.TestCase):
         self.assertTrue(math.isnan(self.dump_and_load(x)))
 
     def test_fraction_normal(self):
-        x = Fraction(math.cos(math.pi/3))
+        x = Fraction.from_float(math.cos(math.pi/3))
         self.assertEqual(self.dump_and_load(x), {'denominator': 9007199254740992, 'numerator': 4503599627370497})
 
     def test_tuple_explicit(self):
