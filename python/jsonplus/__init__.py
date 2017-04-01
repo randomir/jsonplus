@@ -68,7 +68,7 @@ def _load_namedtuple(val):
 
 
 def getattrs(value, attrs):
-    return {attr: getattr(value, attr) for attr in attrs}
+    return dict([(attr, getattr(value, attr)) for attr in attrs])
 
 
 def _json_default_exact(obj):
