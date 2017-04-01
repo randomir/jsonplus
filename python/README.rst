@@ -15,7 +15,8 @@ and ``datetime``/``date``/``time``/``timedelta``.
 If the exact representation of types is not your cup of tea, and all you wish
 for is the ``json.dumps`` to work on your data structure with non-basic types,
 accepting the loss of "type-precision" along the way, than you can use the
-**compatibility** mode (``jsonplus.prefer_compat()``).
+**compatibility** mode (thread-local ``jsonplus.prefer_compat()``, or
+per-call override ``json.dumps(..., exact=False)``).
 
 .. _simplejson: https://simplejson.readthedocs.io/en/latest/#encoders-and-decoders
 .. _jsonplus: https://pypi.python.org/pypi/jsonplus/
