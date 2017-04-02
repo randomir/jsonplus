@@ -126,7 +126,8 @@ class TestJSONPlus(unittest.TestCase):
     
     def test_timedelta(self):
         dt = timedelta(0, 1234567, 123)
-        self.assertEqual(self.dump_and_load(dt), dt.total_seconds())
+        total_seconds = json._timedelta_total_seconds(dt)
+        self.assertEqual(self.dump_and_load(dt), total_seconds)
 
     def test_set(self):
         s = set(range(10))

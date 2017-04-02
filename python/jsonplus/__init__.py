@@ -71,6 +71,11 @@ def getattrs(value, attrs):
     return dict([(attr, getattr(value, attr)) for attr in attrs])
 
 
+def _timedelta_total_seconds(td):
+    # timedelta.total_seconds() is only available since python 2.7
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600.0) * 10**6) / 10**6
+
+
 def _json_default_exact(obj):
     """Serialization handlers for types unsupported by `simplejson` 
     that try to preserve the exact data types.
@@ -104,7 +109,7 @@ def _json_default_compat(obj):
         'datetime': methodcaller('isoformat'),
         'date': methodcaller('isoformat'),
         'time': methodcaller('isoformat'),
-        'timedelta': methodcaller('total_seconds'),
+        'timedelta': _timedelta_total_seconds,
         'set': list,
         'frozenset': list,
         'complex': partial(getattrs, attrs=['real', 'imag']),
