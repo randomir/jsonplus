@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='jsonplus',
-    version='0.6.4',
+    version='0.6.5',
     description="Custom datatypes (like datetime) serialization to/from JSON.",
     long_description=open('README.rst').read(),
     author='Radomir Stevanovic',
