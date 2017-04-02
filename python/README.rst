@@ -1,6 +1,22 @@
 JSON+
 =====
 
+.. image:: https://img.shields.io/pypi/v/jsonplus.svg
+    :target: https://pypi.python.org/pypi/jsonplus
+
+.. image:: https://img.shields.io/pypi/l/jsonplus.svg
+    :target: https://pypi.python.org/pypi/jsonplus
+
+.. image:: https://img.shields.io/pypi/wheel/jsonplus.svg
+    :target: https://pypi.python.org/pypi/jsonplus
+
+.. image:: https://img.shields.io/pypi/pyversions/jsonplus.svg
+    :target: https://pypi.python.org/pypi/jsonplus
+
+.. image:: https://api.travis-ci.org/randomir/jsonplus.svg?branch=master
+    :target: https://travis-ci.org/randomir/jsonplus
+
+
 Serialization of Python types to JSON that "just works".
 
 Forget errors like::
