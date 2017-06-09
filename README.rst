@@ -14,8 +14,27 @@ they support (de-)serialization of types like:
 
 (in addition to basic JSON types).
 
+Overview
+--------
+
++----------------------+----------------+--------------------------------------------------------------+
+| Language/Framework   | Source         | Implemented                                                  |
++======================+================+==============================================================+
+| Python 2.6+, 3.3+    | python_        | (De-)Serialization drop-in replacement for ``simplejson``.   |
+|                      |                | Exact & compatibility mode supported. See detailed docs_.    |
++----------------------+----------------+--------------------------------------------------------------+
+| Django 1.8+          | python-django_ | As ``jsonplus`` + database model field ``JSONPlusField``.    |
++----------------------+----------------+--------------------------------------------------------------+
+| Flask 0.10+          | python-flask_  | Using ``jsonplus`` as the default Flask (de-)serializator.   |
++----------------------+----------------+--------------------------------------------------------------+
+| JavaScript           | n/a            | TODO                                                         |
++----------------------+----------------+--------------------------------------------------------------+
 
 .. _specs: https://tools.ietf.org/html/rfc7159.html
+.. _docs: https://github.com/randomir/jsonplus/tree/master/python
 .. _Python: https://github.com/randomir/jsonplus/tree/master/python
+.. _python: https://github.com/randomir/jsonplus/tree/master/python
 .. _Flask: https://github.com/randomir/jsonplus/tree/master/python-flask
+.. _python-flask: https://github.com/randomir/jsonplus/tree/master/python-flask
 .. _Django: https://github.com/randomir/jsonplus/tree/master/python-django
+.. _python-django: https://github.com/randomir/jsonplus/tree/master/python-django
