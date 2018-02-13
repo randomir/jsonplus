@@ -82,6 +82,29 @@ def _timedelta_total_seconds(td):
     return (td.microseconds + (td.seconds + td.days * 24 * 3600.0) * 10**6) / 10**6
 
 
+def _dump_currency(obj):
+    """Serialize standard (ISO-defined) currencies to currency code only,
+    and non-standard (user-added) currencies in full.
+    """
+    from moneyed import get_currency, CurrencyDoesNotExist
+    try:
+        get_currency(obj.code)
+        return obj.code
+    except CurrencyDoesNotExist:
+        return getattrs(obj, ['code', 'numeric', 'name', 'countries'])
+
+
+def _load_currency(val):
+    """Deserialize string values as standard currencies, but
+    manually define fully-defined currencies (with code/name/numeric/countries).
+    """
+    from moneyed import get_currency
+    try:
+        return get_currency(code=val)
+    except:
+        return Currency(**val)
+
+
 def _json_default_exact(obj):
     """Serialization handlers for types unsupported by `simplejson` 
     that try to preserve the exact data types.
@@ -99,7 +122,7 @@ def _json_default_exact(obj):
         'Decimal': str,
         'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
         'UUID': partial(getattrs, attrs=['hex']),
-        'Currency': partial(getattrs, attrs=['code']),
+        'Currency': _dump_currency,
         'Money': partial(getattrs, attrs=['amount', 'currency']),
     }
     if classname in handlers:
@@ -157,7 +180,7 @@ def _json_object_hook(dict):
         'UUID': kwargified(uuid.UUID),
         # wrap with lambda to delay Currency/Money
         # parsing if not installed (and not needed)
-        'Currency': lambda kw: Currency(**kw),
+        'Currency': _load_currency,
         'Money': lambda kw: Money(**kw),
     }
     if classname:

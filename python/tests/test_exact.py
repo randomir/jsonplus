@@ -214,9 +214,24 @@ class TestJSONPlus(unittest.TestCase):
         self.assertEqual(b, a)
 
     def test_money(self):
+        from moneyed import USD
         a = Money(amount='3.14', currency='USD')
         b = self.dump_and_load(a)
         self.assertEqual(b, a)
+        self.assertEqual(b.currency.code, USD.code)
+
+    def test_currency_std(self):
+        from moneyed import get_currency
+        a = get_currency('USD')
+        b = self.dump_and_load(a)
+        self.assertEqual(b.numeric, a.numeric)
+
+    def test_currency_user(self):
+        a = Currency(code='AAA', numeric=9999, name='test')
+        b = self.dump_and_load(a)
+        self.assertEqual(b.code, a.code)
+        self.assertEqual(b.numeric, a.numeric)
+        self.assertEqual(b.name, a.name)
 
 
 if __name__ == '__main__':
