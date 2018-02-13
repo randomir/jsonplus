@@ -14,6 +14,12 @@ from collections import namedtuple
 import threading
 import uuid
 
+try:
+    from moneyed import Money, Currency
+except ImportError:
+    # defer failing to actual (de-)serialization
+    pass
+
 __all__ = ["loads", "dumps", "pretty",
            "json_loads", "json_dumps", "json_prettydump"]
 
@@ -93,6 +99,8 @@ def _json_default_exact(obj):
         'Decimal': str,
         'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
         'UUID': partial(getattrs, attrs=['hex']),
+        'Currency': partial(getattrs, attrs=['code']),
+        'Money': partial(getattrs, attrs=['amount', 'currency']),
     }
     if classname in handlers:
         return {"__class__": classname,
@@ -114,7 +122,9 @@ def _json_default_compat(obj):
         'frozenset': list,
         'complex': partial(getattrs, attrs=['real', 'imag']),
         'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
-        'UUID': str
+        'UUID': str,
+        'Currency': str,
+        'Money': str,
     }
     if classname in handlers:
         return handlers[classname](obj)
@@ -144,7 +154,11 @@ def _json_object_hook(dict):
         'Decimal': Decimal,
         'Fraction': kwargified(Fraction),
         'namedtuple': _load_namedtuple,
-        'UUID': kwargified(uuid.UUID)
+        'UUID': kwargified(uuid.UUID),
+        # wrap with lambda to delay Currency/Money
+        # parsing if not installed (and not needed)
+        'Currency': lambda kw: Currency(**kw),
+        'Money': lambda kw: Money(**kw),
     }
     if classname:
         constructor = handlers.get(classname)
