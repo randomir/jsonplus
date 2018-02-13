@@ -16,6 +16,8 @@ from fractions import Fraction
 from collections import namedtuple
 import uuid
 
+from moneyed import Money, Currency
+
 
 class TestJSONPlus(unittest.TestCase):
     def setUp(self):
@@ -182,6 +184,10 @@ class TestJSONPlus(unittest.TestCase):
         a = json.dumps(float("inf"))
         b = 'null'
         self.assertEqual(b, a)
+
+    def test_money(self):
+        x = Money(amount='3.14', currency='USD')
+        self.assertEqual(self.dump_and_load(x), str(x))
 
 
 if __name__ == '__main__':

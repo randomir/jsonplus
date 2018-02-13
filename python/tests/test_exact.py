@@ -16,6 +16,8 @@ from fractions import Fraction
 from collections import namedtuple
 import uuid
 
+from moneyed import Money, Currency
+
 
 class TestJSONPlus(unittest.TestCase):
     def setUp(self):
@@ -208,6 +210,11 @@ class TestJSONPlus(unittest.TestCase):
 
     def test_inf_reconstruction(self):
         a = float("inf")
+        b = self.dump_and_load(a)
+        self.assertEqual(b, a)
+
+    def test_money(self):
+        a = Money(amount='3.14', currency='USD')
         b = self.dump_and_load(a)
         self.assertEqual(b, a)
 
