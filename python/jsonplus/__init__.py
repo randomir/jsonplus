@@ -21,7 +21,8 @@ except ImportError:
     pass
 
 __all__ = ["loads", "dumps", "pretty",
-           "json_loads", "json_dumps", "json_prettydump"]
+           "json_loads", "json_dumps", "json_prettydump",
+           "encoder", "decoder"]
 
 
 # Should we aim for the *exact* reproduction of Python types,
@@ -121,6 +122,21 @@ _exact_encode_handlers = {
     'Money': partial(getattrs, attrs=['amount', 'currency']),
 }
 
+def encoder(classname, exact=True):
+    """Decorator for registering a new encoder for `classname`.
+
+    Example:
+        @encoder('mytype')
+        def mytype_exact_encoder(myobj):
+            return myobj.to_json()
+    """
+    def _decorator(f):
+        if exact:
+            _exact_encode_handlers.setdefault(classname, f)
+        else:
+            _compat_encode_handlers.setdefault(classname, f)
+    return _decorator
+
 
 def _json_default_exact(obj):
     """Serialization handlers for types unsupported by `simplejson` 
@@ -185,6 +201,19 @@ _exact_decode_handlers = {
     'Currency': _load_currency,
     'Money': lambda kw: Money(**kw),
 }
+
+
+def decoder(classname):
+    """Decorator for registering a new decoder for `classname`.
+
+    Example:
+        @decoder('mytype')
+        def mytype_decoder(value):
+            return mytype(value, reconstruct=True)
+    """
+    def _decorator(f):
+        _exact_decode_handlers.setdefault(classname, f)
+    return _decorator
 
 
 def _json_object_hook(dict):
