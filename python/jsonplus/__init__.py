@@ -105,52 +105,58 @@ def _load_currency(val):
         return Currency(**val)
 
 
+_exact_encode_handlers = {
+    'datetime': methodcaller('isoformat'),
+    'date': methodcaller('isoformat'),
+    'time': methodcaller('isoformat'),
+    'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
+    'tuple': list,
+    'set': list,
+    'frozenset': list,
+    'complex': partial(getattrs, attrs=['real', 'imag']),
+    'Decimal': str,
+    'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
+    'UUID': partial(getattrs, attrs=['hex']),
+    'Currency': _dump_currency,
+    'Money': partial(getattrs, attrs=['amount', 'currency']),
+}
+
+
 def _json_default_exact(obj):
     """Serialization handlers for types unsupported by `simplejson` 
     that try to preserve the exact data types.
     """
     classname = type(obj).__name__
-    handlers = {
-        'datetime': methodcaller('isoformat'),
-        'date': methodcaller('isoformat'),
-        'time': methodcaller('isoformat'),
-        'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
-        'tuple': list,
-        'set': list,
-        'frozenset': list,
-        'complex': partial(getattrs, attrs=['real', 'imag']),
-        'Decimal': str,
-        'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
-        'UUID': partial(getattrs, attrs=['hex']),
-        'Currency': _dump_currency,
-        'Money': partial(getattrs, attrs=['amount', 'currency']),
-    }
-    if classname in handlers:
+    if classname in _exact_encode_handlers:
         return {"__class__": classname,
-                "__value__": handlers[classname](obj)}
-    elif isinstance(obj, tuple) and classname != 'tuple':
+                "__value__": _exact_encode_handlers[classname](obj)}
+    elif isinstance(obj, tuple) and hasattr(obj, '_fields'):
+        # TODO: generalize registry for cases like namedtuple
+        # where we can't differentiate the type only by classname
         return {"__class__": "namedtuple",
                 "__value__": _dump_namedtuple(classname, obj)}
     raise TypeError(repr(obj) + " is not JSON serializable")
 
 
+_compat_encode_handlers = {
+    'datetime': methodcaller('isoformat'),
+    'date': methodcaller('isoformat'),
+    'time': methodcaller('isoformat'),
+    'timedelta': _timedelta_total_seconds,
+    'set': list,
+    'frozenset': list,
+    'complex': partial(getattrs, attrs=['real', 'imag']),
+    'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
+    'UUID': str,
+    'Currency': str,
+    'Money': str,
+}
+
+
 def _json_default_compat(obj):
     classname = type(obj).__name__
-    handlers = {
-        'datetime': methodcaller('isoformat'),
-        'date': methodcaller('isoformat'),
-        'time': methodcaller('isoformat'),
-        'timedelta': _timedelta_total_seconds,
-        'set': list,
-        'frozenset': list,
-        'complex': partial(getattrs, attrs=['real', 'imag']),
-        'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
-        'UUID': str,
-        'Currency': str,
-        'Money': str,
-    }
-    if classname in handlers:
-        return handlers[classname](obj)
+    if classname in _compat_encode_handlers:
+        return _compat_encode_handlers[classname](obj)
     raise TypeError(repr(obj) + " is not JSON serializable")
 
 
@@ -161,30 +167,32 @@ def kwargified(constructor):
     return kwargs_constructor
 
 
+_exact_decode_handlers = {
+    'datetime': parse_datetime,
+    'date': lambda v: parse_datetime(v).date(),
+    'time': lambda v: parse_datetime(v).timetz(),
+    'timedelta': kwargified(timedelta),
+    'tuple': tuple,
+    'set': set,
+    'frozenset': frozenset,
+    'complex': kwargified(complex),
+    'Decimal': Decimal,
+    'Fraction': kwargified(Fraction),
+    'namedtuple': _load_namedtuple,
+    'UUID': kwargified(uuid.UUID),
+    # wrap with lambda to delay Currency/Money
+    # parsing if not installed (and not needed)
+    'Currency': _load_currency,
+    'Money': lambda kw: Money(**kw),
+}
+
+
 def _json_object_hook(dict):
     """Deserialization handlers for types unsupported by `simplejson`.
     """
     classname = dict.get('__class__')
-    handlers = {
-        'datetime': parse_datetime,
-        'date': lambda v: parse_datetime(v).date(),
-        'time': lambda v: parse_datetime(v).timetz(),
-        'timedelta': kwargified(timedelta),
-        'tuple': tuple,
-        'set': set,
-        'frozenset': frozenset,
-        'complex': kwargified(complex),
-        'Decimal': Decimal,
-        'Fraction': kwargified(Fraction),
-        'namedtuple': _load_namedtuple,
-        'UUID': kwargified(uuid.UUID),
-        # wrap with lambda to delay Currency/Money
-        # parsing if not installed (and not needed)
-        'Currency': _load_currency,
-        'Money': lambda kw: Money(**kw),
-    }
     if classname:
-        constructor = handlers.get(classname)
+        constructor = _exact_decode_handlers.get(classname)
         value = dict.get('__value__')
         if constructor:
             return constructor(value)
