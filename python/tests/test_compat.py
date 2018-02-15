@@ -189,6 +189,15 @@ class TestJSONPlus(unittest.TestCase):
         x = Money(amount='3.14', currency='USD')
         self.assertEqual(self.dump_and_load(x), str(x))
 
+    def test_user_encoder_compat(self):
+        @json.encoder('mytype', exact=False)
+        def mytype_encoder(obj):
+            return obj.y
+        class mytype(object):
+            y = 313
+        self.assertEqual(json.dumps(mytype(), sort_keys=True, exact=False),
+                         '313')
+
 
 if __name__ == '__main__':
     unittest.main()
