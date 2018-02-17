@@ -70,34 +70,6 @@ def getattrs(value, attrs):
     return dict([(attr, getattr(value, attr)) for attr in attrs])
 
 
-def _timedelta_total_seconds(td):
-    # timedelta.total_seconds() is only available since python 2.7
-    return (td.microseconds + (td.seconds + td.days * 24 * 3600.0) * 10**6) / 10**6
-
-
-def _dump_currency(obj):
-    """Serialize standard (ISO-defined) currencies to currency code only,
-    and non-standard (user-added) currencies in full.
-    """
-    from moneyed import get_currency, CurrencyDoesNotExist
-    try:
-        get_currency(obj.code)
-        return obj.code
-    except CurrencyDoesNotExist:
-        return getattrs(obj, ['code', 'numeric', 'name', 'countries'])
-
-
-def _load_currency(val):
-    """Deserialize string values as standard currencies, but
-    manually define fully-defined currencies (with code/name/numeric/countries).
-    """
-    from moneyed import get_currency
-    try:
-        return get_currency(code=val)
-    except:
-        return Currency(**val)
-
-
 _encode_handlers = {
     'exact': {
         'classname': {
@@ -112,7 +84,6 @@ _encode_handlers = {
             'Decimal': str,
             'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
             'UUID': partial(getattrs, attrs=['hex']),
-            'Currency': _dump_currency,
             'Money': partial(getattrs, attrs=['amount', 'currency'])
         },
         'predicate': OrderedDict()
@@ -122,7 +93,6 @@ _encode_handlers = {
             'datetime': methodcaller('isoformat'),
             'date': methodcaller('isoformat'),
             'time': methodcaller('isoformat'),
-            'timedelta': _timedelta_total_seconds,
             'set': list,
             'frozenset': list,
             'complex': partial(getattrs, attrs=['real', 'imag']),
@@ -153,6 +123,7 @@ def encoder(classname, exact=True, predicate=None):
             subregistry['predicate'].setdefault(predicate, (classname, f))
         else:
             subregistry['classname'].setdefault(classname, f)
+        return f
 
     return _decorator
 
@@ -198,11 +169,7 @@ _decode_handlers = {
     'complex': kwargified(complex),
     'Decimal': Decimal,
     'Fraction': kwargified(Fraction),
-    'UUID': kwargified(uuid.UUID),
-    # wrap with lambda to delay Currency/Money
-    # parsing if not installed (and not needed)
-    'Currency': _load_currency,
-    'Money': lambda kw: Money(**kw),
+    'UUID': kwargified(uuid.UUID)
 }
 
 
@@ -322,7 +289,46 @@ def _dump_namedtuple(obj):
             "fields": list(obj._fields),
             "values": list(obj)}
 
+
 @decoder('namedtuple')
 def _load_namedtuple(val):
     cls = namedtuple(val['name'], val['fields'])
     return cls(*val['values'])
+
+
+@encoder('timedelta', exact=False)
+def _timedelta_total_seconds(td):
+    # timedelta.total_seconds() is only available since python 2.7
+    return (td.microseconds + (td.seconds + td.days * 24 * 3600.0) * 10**6) / 10**6
+
+
+@encoder('Currency')
+def _dump_currency(obj):
+    """Serialize standard (ISO-defined) currencies to currency code only,
+    and non-standard (user-added) currencies in full.
+    """
+    from moneyed import get_currency, CurrencyDoesNotExist
+    try:
+        get_currency(obj.code)
+        return obj.code
+    except CurrencyDoesNotExist:
+        return getattrs(obj, ['code', 'numeric', 'name', 'countries'])
+
+
+@decoder('Currency')
+def _load_currency(val):
+    """Deserialize string values as standard currencies, but
+    manually define fully-defined currencies (with code/name/numeric/countries).
+    """
+    from moneyed import get_currency
+    try:
+        return get_currency(code=val)
+    except:
+        return Currency(**val)
+
+
+@decoder('Money')
+def _load_money(val):
+    # wrap with function to delay Currency/Money
+    # parsing if not installed (and not needed)
+    return Money(**val)
