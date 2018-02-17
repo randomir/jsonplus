@@ -7,6 +7,7 @@ import simplejson as json
 from datetime import datetime, timedelta, date, time
 from dateutil.parser import parse as parse_datetime
 from functools import wraps, partial
+from collections import OrderedDict
 from operator import methodcaller
 from decimal import Decimal
 from fractions import Fraction
@@ -65,15 +66,6 @@ def prefer_compat():
     prefer(COMPAT)
 
 
-def _dump_namedtuple(classname, obj):
-    return {"name": classname, "fields": list(obj._fields), "values": list(obj)}
-
-
-def _load_namedtuple(val):
-    cls = namedtuple(val['name'], val['fields'])
-    return cls(*val['values'])
-
-
 def getattrs(value, attrs):
     return dict([(attr, getattr(value, attr)) for attr in attrs])
 
@@ -106,35 +98,62 @@ def _load_currency(val):
         return Currency(**val)
 
 
-_exact_encode_handlers = {
-    'datetime': methodcaller('isoformat'),
-    'date': methodcaller('isoformat'),
-    'time': methodcaller('isoformat'),
-    'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
-    'tuple': list,
-    'set': list,
-    'frozenset': list,
-    'complex': partial(getattrs, attrs=['real', 'imag']),
-    'Decimal': str,
-    'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
-    'UUID': partial(getattrs, attrs=['hex']),
-    'Currency': _dump_currency,
-    'Money': partial(getattrs, attrs=['amount', 'currency']),
+_encode_handlers = {
+    'exact': {
+        'classname': {
+            'datetime': methodcaller('isoformat'),
+            'date': methodcaller('isoformat'),
+            'time': methodcaller('isoformat'),
+            'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
+            'tuple': list,
+            'set': list,
+            'frozenset': list,
+            'complex': partial(getattrs, attrs=['real', 'imag']),
+            'Decimal': str,
+            'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
+            'UUID': partial(getattrs, attrs=['hex']),
+            'Currency': _dump_currency,
+            'Money': partial(getattrs, attrs=['amount', 'currency'])
+        },
+        'predicate': OrderedDict()
+    },
+    'compat': {
+        'classname': {
+            'datetime': methodcaller('isoformat'),
+            'date': methodcaller('isoformat'),
+            'time': methodcaller('isoformat'),
+            'timedelta': _timedelta_total_seconds,
+            'set': list,
+            'frozenset': list,
+            'complex': partial(getattrs, attrs=['real', 'imag']),
+            'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
+            'UUID': str,
+            'Currency': str,
+            'Money': str,
+        },
+        'predicate': OrderedDict()
+    }
 }
 
-def encoder(classname, exact=True):
-    """Decorator for registering a new encoder for `classname`.
 
+def encoder(classname, exact=True, predicate=None):
+    """Decorator for registering a new encoder for `classname`.
     Example:
         @encoder('mytype')
         def mytype_exact_encoder(myobj):
             return myobj.to_json()
     """
+    if exact:
+        subregistry = _encode_handlers['exact']
+    else:
+        subregistry = _encode_handlers['compat']
+
     def _decorator(f):
-        if exact:
-            _exact_encode_handlers.setdefault(classname, f)
+        if predicate:
+            subregistry['predicate'].setdefault(predicate, (classname, f))
         else:
-            _compat_encode_handlers.setdefault(classname, f)
+            subregistry['classname'].setdefault(classname, f)
+
     return _decorator
 
 
@@ -143,36 +162,20 @@ def _json_default_exact(obj):
     that try to preserve the exact data types.
     """
     classname = type(obj).__name__
-    if classname in _exact_encode_handlers:
+    if classname in _encode_handlers['exact']['classname']:
         return {"__class__": classname,
-                "__value__": _exact_encode_handlers[classname](obj)}
-    elif isinstance(obj, tuple) and hasattr(obj, '_fields'):
-        # TODO: generalize registry for cases like namedtuple
-        # where we can't differentiate the type only by classname
-        return {"__class__": "namedtuple",
-                "__value__": _dump_namedtuple(classname, obj)}
+                "__value__": _encode_handlers['exact']['classname'][classname](obj)}
+    else:
+        for istype, (typename, encoder) in _encode_handlers['exact']['predicate'].items():
+            if istype(obj):
+                return {"__class__": typename, "__value__": encoder(obj)}
     raise TypeError(repr(obj) + " is not JSON serializable")
-
-
-_compat_encode_handlers = {
-    'datetime': methodcaller('isoformat'),
-    'date': methodcaller('isoformat'),
-    'time': methodcaller('isoformat'),
-    'timedelta': _timedelta_total_seconds,
-    'set': list,
-    'frozenset': list,
-    'complex': partial(getattrs, attrs=['real', 'imag']),
-    'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
-    'UUID': str,
-    'Currency': str,
-    'Money': str,
-}
 
 
 def _json_default_compat(obj):
     classname = type(obj).__name__
-    if classname in _compat_encode_handlers:
-        return _compat_encode_handlers[classname](obj)
+    if classname in _encode_handlers['compat']['classname']:
+        return _encode_handlers['compat']['classname'][classname](obj)
     raise TypeError(repr(obj) + " is not JSON serializable")
 
 
@@ -183,7 +186,8 @@ def kwargified(constructor):
     return kwargs_constructor
 
 
-_exact_decode_handlers = {
+# all decode handlers are for EXACT decoding BY CLASSNAME
+_decode_handlers = {
     'datetime': parse_datetime,
     'date': lambda v: parse_datetime(v).date(),
     'time': lambda v: parse_datetime(v).timetz(),
@@ -194,7 +198,6 @@ _exact_decode_handlers = {
     'complex': kwargified(complex),
     'Decimal': Decimal,
     'Fraction': kwargified(Fraction),
-    'namedtuple': _load_namedtuple,
     'UUID': kwargified(uuid.UUID),
     # wrap with lambda to delay Currency/Money
     # parsing if not installed (and not needed)
@@ -212,7 +215,7 @@ def decoder(classname):
             return mytype(value, reconstruct=True)
     """
     def _decorator(f):
-        _exact_decode_handlers.setdefault(classname, f)
+        _decode_handlers.setdefault(classname, f)
     return _decorator
 
 
@@ -221,7 +224,7 @@ def _json_object_hook(dict):
     """
     classname = dict.get('__class__')
     if classname:
-        constructor = _exact_decode_handlers.get(classname)
+        constructor = _decode_handlers.get(classname)
         value = dict.get('__value__')
         if constructor:
             return constructor(value)
@@ -311,3 +314,15 @@ def pretty(x, sort_keys=True, indent=4*' ', separators=(',', ': '), **kw):
 json_dumps = dumps
 json_loads = loads
 json_prettydump = pretty
+
+
+@encoder('namedtuple', predicate=lambda obj: isinstance(obj, tuple) and hasattr(obj, '_fields'), exact=True)
+def _dump_namedtuple(obj):
+    return {"name": type(obj).__name__,
+            "fields": list(obj._fields),
+            "values": list(obj)}
+
+@decoder('namedtuple')
+def _load_namedtuple(val):
+    cls = namedtuple(val['name'], val['fields'])
+    return cls(*val['values'])
