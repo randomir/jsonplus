@@ -70,40 +70,11 @@ def getattrs(value, attrs):
     return dict([(attr, getattr(value, attr)) for attr in attrs])
 
 
-_encode_handlers = {
-    'exact': {
-        'classname': {
-            'datetime': methodcaller('isoformat'),
-            'date': methodcaller('isoformat'),
-            'time': methodcaller('isoformat'),
-            'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
-            'tuple': list,
-            'set': list,
-            'frozenset': list,
-            'complex': partial(getattrs, attrs=['real', 'imag']),
-            'Decimal': str,
-            'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
-            'UUID': partial(getattrs, attrs=['hex']),
-            'Money': partial(getattrs, attrs=['amount', 'currency'])
-        },
-        'predicate': OrderedDict()
-    },
-    'compat': {
-        'classname': {
-            'datetime': methodcaller('isoformat'),
-            'date': methodcaller('isoformat'),
-            'time': methodcaller('isoformat'),
-            'set': list,
-            'frozenset': list,
-            'complex': partial(getattrs, attrs=['real', 'imag']),
-            'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
-            'UUID': str,
-            'Currency': str,
-            'Money': str,
-        },
-        'predicate': OrderedDict()
-    }
-}
+def kwargified(constructor):
+    @wraps(constructor)
+    def kwargs_constructor(kwargs):
+        return constructor(**kwargs)
+    return kwargs_constructor
 
 
 def encoder(classname, exact=True, predicate=None):
@@ -148,29 +119,6 @@ def _json_default_compat(obj):
     if classname in _encode_handlers['compat']['classname']:
         return _encode_handlers['compat']['classname'][classname](obj)
     raise TypeError(repr(obj) + " is not JSON serializable")
-
-
-def kwargified(constructor):
-    @wraps(constructor)
-    def kwargs_constructor(kwargs):
-        return constructor(**kwargs)
-    return kwargs_constructor
-
-
-# all decode handlers are for EXACT decoding BY CLASSNAME
-_decode_handlers = {
-    'datetime': parse_datetime,
-    'date': lambda v: parse_datetime(v).date(),
-    'time': lambda v: parse_datetime(v).timetz(),
-    'timedelta': kwargified(timedelta),
-    'tuple': tuple,
-    'set': set,
-    'frozenset': frozenset,
-    'complex': kwargified(complex),
-    'Decimal': Decimal,
-    'Fraction': kwargified(Fraction),
-    'UUID': kwargified(uuid.UUID)
-}
 
 
 def decoder(classname):
@@ -281,6 +229,59 @@ def pretty(x, sort_keys=True, indent=4*' ', separators=(',', ': '), **kw):
 json_dumps = dumps
 json_loads = loads
 json_prettydump = pretty
+
+
+
+_encode_handlers = {
+    'exact': {
+        'classname': {
+            'datetime': methodcaller('isoformat'),
+            'date': methodcaller('isoformat'),
+            'time': methodcaller('isoformat'),
+            'timedelta': partial(getattrs, attrs=['days', 'seconds', 'microseconds']),
+            'tuple': list,
+            'set': list,
+            'frozenset': list,
+            'complex': partial(getattrs, attrs=['real', 'imag']),
+            'Decimal': str,
+            'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
+            'UUID': partial(getattrs, attrs=['hex']),
+            'Money': partial(getattrs, attrs=['amount', 'currency'])
+        },
+        'predicate': OrderedDict()
+    },
+    'compat': {
+        'classname': {
+            'datetime': methodcaller('isoformat'),
+            'date': methodcaller('isoformat'),
+            'time': methodcaller('isoformat'),
+            'set': list,
+            'frozenset': list,
+            'complex': partial(getattrs, attrs=['real', 'imag']),
+            'Fraction': partial(getattrs, attrs=['numerator', 'denominator']),
+            'UUID': str,
+            'Currency': str,
+            'Money': str,
+        },
+        'predicate': OrderedDict()
+    }
+}
+
+
+# all decode handlers are for EXACT decoding BY CLASSNAME
+_decode_handlers = {
+    'datetime': parse_datetime,
+    'date': lambda v: parse_datetime(v).date(),
+    'time': lambda v: parse_datetime(v).timetz(),
+    'timedelta': kwargified(timedelta),
+    'tuple': tuple,
+    'set': set,
+    'frozenset': frozenset,
+    'complex': kwargified(complex),
+    'Decimal': Decimal,
+    'Fraction': kwargified(Fraction),
+    'UUID': kwargified(uuid.UUID)
+}
 
 
 @encoder('namedtuple', predicate=lambda obj: isinstance(obj, tuple) and hasattr(obj, '_fields'), exact=True)
