@@ -78,11 +78,36 @@ def kwargified(constructor):
 
 
 def encoder(classname, exact=True, predicate=None):
-    """Decorator for registering a new encoder for `classname`.
-    Example:
+    """A decorator for registering a new encoder for object type
+    defined either by a `classname`, or detected via `predicate`.
+
+    Args:
+        classname (str):
+            Classname of the object serialized, equal to
+            ``type(obj).__name__``.
+
+        exact (bool, default=True):
+            Determines the kind of encoder registered, an exact
+            (default), or a compact representation encoder.
+
+        predicate (callable):
+            A predicate for testing if object is of certain type.
+            The predicate shall receive a single argument, the object
+            being encoded, and it has to return a boolean `True/False`.
+            See examples below.
+
+    Examples:
         @encoder('mytype')
         def mytype_exact_encoder(myobj):
             return myobj.to_json()
+
+        Functional discriminator usage is appropriate for serialization
+        of objects with a different classname, but which can be encoded
+        with the same encoder:
+
+        @encoder('baseclass', True, lambda obj: isinstance(obj, BaseClass))
+        def all_derived_classes_encoder(derived):
+            return derived.base_encoder()
     """
     if exact:
         subregistry = _encode_handlers['exact']
@@ -122,7 +147,9 @@ def _json_default_compat(obj):
 
 
 def decoder(classname):
-    """Decorator for registering a new decoder for `classname`.
+    """A decorator for registering a new decoder for `classname`.
+    Only ``exact`` decoders can be registered, since it is an assumption
+    the ``compat`` mode serializes to standard JSON.
 
     Example:
         @decoder('mytype')
