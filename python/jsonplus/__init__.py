@@ -77,7 +77,7 @@ def kwargified(constructor):
     return kwargs_constructor
 
 
-def encoder(classname, exact=True, predicate=None):
+def encoder(classname, predicate=None, exact=True):
     """A decorator for registering a new encoder for object type
     defined either by a `classname`, or detected via `predicate`.
 
@@ -86,15 +86,15 @@ def encoder(classname, exact=True, predicate=None):
             Classname of the object serialized, equal to
             ``type(obj).__name__``.
 
-        exact (bool, default=True):
-            Determines the kind of encoder registered, an exact
-            (default), or a compact representation encoder.
-
-        predicate (callable):
+        predicate (callable, default=None):
             A predicate for testing if object is of certain type.
             The predicate shall receive a single argument, the object
             being encoded, and it has to return a boolean `True/False`.
             See examples below.
+
+        exact (bool, default=True):
+            Determines the kind of encoder registered, an exact
+            (default), or a compact representation encoder.
 
     Examples:
         @encoder('mytype')
@@ -105,7 +105,7 @@ def encoder(classname, exact=True, predicate=None):
         of objects with a different classname, but which can be encoded
         with the same encoder:
 
-        @encoder('baseclass', True, lambda obj: isinstance(obj, BaseClass))
+        @encoder('BaseClass', lambda obj: isinstance(obj, BaseClass))
         def all_derived_classes_encoder(derived):
             return derived.base_encoder()
     """
@@ -311,7 +311,7 @@ _decode_handlers = {
 }
 
 
-@encoder('namedtuple', predicate=lambda obj: isinstance(obj, tuple) and hasattr(obj, '_fields'), exact=True)
+@encoder('namedtuple', lambda obj: isinstance(obj, tuple) and hasattr(obj, '_fields'))
 def _dump_namedtuple(obj):
     return {"name": type(obj).__name__,
             "fields": list(obj._fields),
