@@ -7,13 +7,18 @@ import simplejson as json
 from datetime import datetime, timedelta, date, time
 from dateutil.parser import parse as parse_datetime
 from functools import wraps, partial
-from collections import OrderedDict
 from operator import methodcaller
 from decimal import Decimal
 from fractions import Fraction
 from collections import namedtuple
 import threading
 import uuid
+
+# python 2.6 does not include OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 try:
     from moneyed import Money, Currency
