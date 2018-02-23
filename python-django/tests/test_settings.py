@@ -3,7 +3,8 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'jnhjttydRTDBjnOIm'
 INSTALLED_APPS = [
-    'tests'
+    'tests',
+    'djmoney'
 ]
 DATABASES = {
     'default': {

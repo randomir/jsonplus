@@ -5,6 +5,10 @@ from datetime import datetime
 from django.test import TestCase
 from django.db import connection
 
+from moneyed import Money
+from djmoney.money import Money as DjangoMoney
+import jsonplus
+
 from tests.models import TestModel
 
 
@@ -52,3 +56,12 @@ class SimpleTest(TestCase):
         orig = TestModel.objects.create(normal=datetime.now())
         copy = TestModel.objects.get(id=orig.id)
         self.assertEqual(orig.normal, copy.normal)
+
+    def test_django_money(self):
+        m = Money(313, 'USD')
+        dm = DjangoMoney(313, 'USD')
+        obj = jsonplus.loads(jsonplus.dumps(dm))
+        self.assertEqual(obj, dm)
+        self.assertTrue(hasattr(obj, 'is_localized'))
+        self.assertTrue(hasattr(dm, 'is_localized'))
+        self.assertFalse(hasattr(m, 'is_localized'))
