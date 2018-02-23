@@ -13,6 +13,9 @@ setup(
     packages=['jsonplus'],
     package_dir={'jsonplus': 'jsonplus'},
     install_requires=[i.strip() for i in open('requirements.txt').readlines()],
+    extras_require={
+        ':python_version<"2.7"': ['ordereddict>=1.1']
+    },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
