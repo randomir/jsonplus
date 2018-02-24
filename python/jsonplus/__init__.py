@@ -72,10 +72,39 @@ def prefer_compat():
 
 
 def getattrs(value, attrs):
+    """Helper function that extracts a list of attributes from
+    `value` object in a `dict`/mapping of (attr, value[attr]).
+
+    Args:
+        value (object):
+            Any Python object upon which `getattr` can act.
+
+        attrs (iterable):
+            Any iterable containing attribute names for extract.
+
+    Returns:
+        `dict` of attr -> val mappings.
+
+    Example:
+        >>> getattrs(complex(2,3), ['imag', 'real'])
+        {'imag': 3.0, 'real': 2.0}
+    """
     return dict([(attr, getattr(value, attr)) for attr in attrs])
 
 
 def kwargified(constructor):
+    """Function decorator that wraps a function receiving
+    keyword arguments into a function receiving a dictionary
+    of arguments.
+
+    Example:
+        @kwargified
+        def test(a=1, b=2):
+            return a + b
+
+        >>> test({'b': 3})
+        4
+    """
     @wraps(constructor)
     def kwargs_constructor(kwargs):
         return constructor(**kwargs)
