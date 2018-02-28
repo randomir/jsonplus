@@ -186,7 +186,18 @@ class TestJSONPlus(unittest.TestCase):
     def test_namedtuple(self):
         Point = namedtuple('Point', 'x y')
         x = Point(3, 4)
-        self.assertEqual(self.dump_and_load(x), x)
+        y = self.dump_and_load(x)
+        self.assertEqual(x, y)
+        self.assertEqual(y.x, 3)
+        self.assertEqual(y.y, 4)
+
+    def test_namedtuple_priority(self):
+        mytuple = namedtuple('tuple', 'x y')
+        x = mytuple(3, 4)
+        y = self.dump_and_load(x)
+        self.assertEqual(x, y)
+        self.assertEqual(y.x, 3)
+        self.assertEqual(y.y, 4)
 
     def test_uuid1(self):
         a = uuid.uuid1()
