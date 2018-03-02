@@ -4,6 +4,8 @@
 # (Python compiled without thread support)
 
 import simplejson as json
+from operator import attrgetter
+from sortedcontainers import SortedList
 from datetime import datetime, timedelta, date, time
 from dateutil.parser import parse as parse_datetime
 from functools import wraps, partial
@@ -13,12 +15,6 @@ from fractions import Fraction
 from collections import namedtuple
 import threading
 import uuid
-
-# python 2.6 does not include OrderedDict
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
 
 try:
     from moneyed import Money, Currency
@@ -111,9 +107,15 @@ def kwargified(constructor):
     return kwargs_constructor
 
 
-def encoder(classname, predicate=None, exact=True):
+_PredicatedEncoder = namedtuple('_PredicatedEncoder',
+                                'priority predicate encoder typename')
+
+def encoder(classname, predicate=None, priority=None, exact=True):
     """A decorator for registering a new encoder for object type
     defined either by a `classname`, or detected via `predicate`.
+
+    Predicates are tested according to priority (low to high),
+    but always before classname.
 
     Args:
         classname (str):
@@ -125,6 +127,10 @@ def encoder(classname, predicate=None, exact=True):
             The predicate shall receive a single argument, the object
             being encoded, and it has to return a boolean `True/False`.
             See examples below.
+
+        priority (int, default=None):
+            Predicate priority. If undefined, encoder is added at
+            the end, with lowest priority.
 
         exact (bool, default=True):
             Determines the kind of encoder registered, an exact
@@ -148,9 +154,17 @@ def encoder(classname, predicate=None, exact=True):
     else:
         subregistry = _encode_handlers['compat']
 
+    # if priority undefined, set it to lowest
+    if priority is None:
+        if len(subregistry['predicate']) > 0:
+            priority = subregistry['predicate'][-1].priority + 100
+        else:
+            priority = 1000
+
     def _decorator(f):
         if predicate:
-            subregistry['predicate'].setdefault(predicate, (classname, f))
+            subregistry['predicate'].add(
+                _PredicatedEncoder(priority, predicate, f, classname))
         else:
             subregistry['classname'].setdefault(classname, f)
         return f
@@ -162,18 +176,29 @@ def _json_default_exact(obj):
     """Serialization handlers for types unsupported by `simplejson` 
     that try to preserve the exact data types.
     """
+
+    # first try predicate-based encoders
+    for handler in _encode_handlers['exact']['predicate']:
+        if handler.predicate(obj):
+            return {"__class__": handler.typename,
+                    "__value__": handler.encoder(obj)}
+
+    # then classname-based
     classname = type(obj).__name__
     if classname in _encode_handlers['exact']['classname']:
         return {"__class__": classname,
                 "__value__": _encode_handlers['exact']['classname'][classname](obj)}
-    else:
-        for istype, (typename, encoder) in _encode_handlers['exact']['predicate'].items():
-            if istype(obj):
-                return {"__class__": typename, "__value__": encoder(obj)}
+
     raise TypeError(repr(obj) + " is not JSON serializable")
 
 
 def _json_default_compat(obj):
+    """Serialization handlers that try to dump objects in
+    compatibility mode. Similar to above.
+    """
+    for handler in _encode_handlers['compat']['predicate']:
+        if handler.predicate(obj):
+            return handler.encoder(obj)
     classname = type(obj).__name__
     if classname in _encode_handlers['compat']['classname']:
         return _encode_handlers['compat']['classname'][classname](obj)
@@ -292,7 +317,6 @@ json_loads = loads
 json_prettydump = pretty
 
 
-
 _encode_handlers = {
     'exact': {
         'classname': {
@@ -309,7 +333,7 @@ _encode_handlers = {
             'UUID': partial(getattrs, attrs=['hex']),
             'Money': partial(getattrs, attrs=['amount', 'currency'])
         },
-        'predicate': OrderedDict()
+        'predicate': SortedList(key=attrgetter('priority'))
     },
     'compat': {
         'classname': {
@@ -324,7 +348,7 @@ _encode_handlers = {
             'Currency': str,
             'Money': str,
         },
-        'predicate': OrderedDict()
+        'predicate': SortedList(key=attrgetter('priority'))
     }
 }
 
