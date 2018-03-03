@@ -6,6 +6,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
 import unittest
 import jsonplus
+import simplejson as json
 
 class TestDecorators(unittest.TestCase):
 
@@ -64,6 +65,26 @@ class TestDecorators(unittest.TestCase):
         b = self.dump_and_load(a, exact=False)
         self.assertEqual(a.val, b)
 
+    def test_encoder_predicate(self):
+        class mycls1(object):
+            snowflake = 313
+
+        class mycls2(object):
+            bulldozer = 131
+
+        @jsonplus.encoder('mycls1', lambda obj: hasattr(obj, 'snowflake'))
+        def mycls1_encoder(obj):
+            return obj.snowflake
+
+        @jsonplus.encoder('mycls2', lambda obj: hasattr(obj, 'bulldozer'))
+        def mycls2_encoder(obj):
+            return obj.bulldozer
+
+        a = [mycls2(), mycls1()]
+        b = json.loads(jsonplus.dumps(a))
+
+        self.assertEqual(b[0]['__value__'], a[0].bulldozer)
+        self.assertEqual(b[1]['__value__'], a[1].snowflake)
 
 if __name__ == '__main__':
     unittest.main()
