@@ -244,35 +244,6 @@ class TestJSONPlus(unittest.TestCase):
         self.assertEqual(b.numeric, a.numeric)
         self.assertEqual(b.name, a.name)
 
-    def test_user_encoder_exact(self):
-        class mytype1(object):
-            x = 313
-
-        @json.encoder('mytype1', exact=True)
-        def mytype_encoder(obj):
-            return obj.x
-
-        self.assertEqual(json.dumps(mytype1(), sort_keys=True),
-                         '{"__class__":"mytype1","__value__":313}')
-
-    def test_user_decoder_exact(self):
-        class mytype2(object):
-            def __init__(self, val):
-                self.val = val
-
-        @json.encoder('mytype2')
-        def mytype_encoder(obj):
-            return obj.val
-
-        @json.decoder('mytype2')
-        def mytype_decoder(val):
-            return mytype2(val)
-
-        a = mytype2(313)
-        b = self.dump_and_load(a)
-        print(a, b)
-        self.assertEqual(a.val, b.val)
-
 
 if __name__ == '__main__':
     unittest.main()
