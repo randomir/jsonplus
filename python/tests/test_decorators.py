@@ -65,7 +65,7 @@ class TestDecorators(unittest.TestCase):
         b = self.dump_and_load(a, exact=False)
         self.assertEqual(a.val, b)
 
-    def test_encoder_predicate(self):
+    def test_encoder_predicates(self):
         class mycls1(object):
             snowflake = 313
 
@@ -81,10 +81,47 @@ class TestDecorators(unittest.TestCase):
             return obj.bulldozer
 
         a = [mycls2(), mycls1()]
-        b = json.loads(jsonplus.dumps(a))
+        b = json.loads(jsonplus.dumps(a, exact=True))
 
         self.assertEqual(b[0]['__value__'], a[0].bulldozer)
         self.assertEqual(b[1]['__value__'], a[1].snowflake)
+
+    def test_encoder_predicate_over_classname(self):
+        class mycls(object):
+            uniq = 313
+
+        @jsonplus.encoder('mycls')
+        def mycls_encoder_1(obj):
+            return None
+
+        @jsonplus.encoder('mycls', lambda obj: hasattr(obj, 'uniq'))
+        def mycls_encoder_2(obj):
+            return obj.uniq
+
+        # classname-based encoder is tested after the predicate-based one
+        a = mycls()
+        b = json.loads(jsonplus.dumps(a, exact=True))
+
+        self.assertEqual(b['__class__'], type(a).__name__)
+        self.assertEqual(b['__value__'], a.uniq)
+
+    def test_encoder_priority(self):
+        class mycls(object):
+            pass
+
+        @jsonplus.encoder('mycls', lambda obj: isinstance(obj, mycls))
+        def _enc1(obj):
+            return 'invalid-priority-1000'
+
+        @jsonplus.encoder('mycls', lambda obj: isinstance(obj, mycls), priority=500)
+        def _enc2(obj):
+            return 'valid'
+
+        r = json.loads(jsonplus.dumps(mycls(), exact=True))
+
+        self.assertEqual(r['__class__'], 'mycls')
+        self.assertEqual(r['__value__'], 'valid')
+
 
 if __name__ == '__main__':
     unittest.main()
