@@ -15,6 +15,8 @@ they support (de-)serialization of types like:
 
 (in addition to basic JSON supported-types like integers, floats, lists, and dictionaries).
 
+Also, encoder and decoder for custom (user) types can easily be registered (see python_ example).
+
 Overview
 --------
 

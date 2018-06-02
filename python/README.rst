@@ -214,8 +214,8 @@ additional context will have to be provided to the decoder.
 Adding user types
 -----------------
 
-Support for user/custom types can easily be added with `@jsonplus.encoder` and
-`@jsonplus.decoder` decorators.
+Support for user/custom types can easily be added with ``@jsonplus.encoder`` and
+``@jsonplus.decoder`` decorators.
 
 For example, to enable serialization of your type named ``mytype`` in exact mode
 (to add compat-mode serialization, append ``exact=False`` in decorator):
@@ -233,7 +233,7 @@ For example, to enable serialization of your type named ``mytype`` in exact mode
         return mytype(value, reconstruct=True, ...)
 
 If detection of object class is more complex than a simple classname comparison,
-if you need to use a predicate function, simply add ``predicate=...`` to the ``encoder``
+you'll need to use a predicate function: simply add ``predicate=...`` to the ``encoder``
 decorator. For example:
 
 .. code-block:: python
