@@ -11,8 +11,9 @@ they support (de-)serialization of types like:
 - ``set`` and ``frozenset``
 - ``complex``, ``Decimal``, and ``Fraction``
 - ``datetime``, ``date``, ``time``, and ``timedelta``
+- ``UUID``, ``moneyed.Money``, ``moneyed.Currency``
 
-(in addition to basic JSON types).
+(in addition to basic JSON supported-types like integers, floats, lists, and dictionaries).
 
 Overview
 --------
