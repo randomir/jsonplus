@@ -233,11 +233,21 @@ For example, to enable serialization of your type named ``mytype`` in exact mode
         return mytype(value, reconstruct=True, ...)
 
 If detection of object class is more complex than a simple classname comparison,
-you'll need to use a predicate function: simply add ``predicate=...`` to the ``encoder``
+you'll need to use a **predicate** function: simply add ``predicate=...`` to the ``encoder``
 decorator. For example:
 
 .. code-block:: python
 
-    @jsonplus.encoder('BaseClass', lambda obj: isinstance(obj, BaseClass))
+    @jsonplus.encoder('BaseClass', predicate=lambda obj: isinstance(obj, BaseClass))
     def all_derived_classes_encoder(derived):
         return derived.base_encoder()
+
+To control the order in which predicates are tested, use ``priority`` keyword argument.
+First predicated encoder has priority of 1000, and if not explicitly given, each new encoder
+is appended with priority ``last+100``. A lower priority predicate is tested before a higher
+priority predicate.
+
+Classname-based (en/de)coders are tested *after* all predicate-based ones.
+Classname lookup has a constant amortized time, but predicates have to be tested (executed)
+one by one. Hence, in interest of performance, minimize the number of predicate-based
+coders, and try using classname-based ones (if possible).
