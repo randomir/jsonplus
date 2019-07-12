@@ -40,5 +40,11 @@ class FlaskJSONPlus(object):
     def loads(*pa, **kw):
         return jsonplus.loads(*pa, **kw)
 
+    def dump(*pa, **kw):
+        return jsonplus.dump(*pa, **kw)
+
+    def load(*pa, **kw):
+        return jsonplus.load(*pa, **kw)
+
     def pretty(obj, **kw):
         return jsonplus.pretty(obj, **kw)
