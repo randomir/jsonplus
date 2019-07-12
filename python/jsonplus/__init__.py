@@ -22,9 +22,9 @@ except ImportError:
     # defer failing to actual (de-)serialization
     pass
 
-__all__ = ["loads", "dumps", "pretty",
-           "json_loads", "json_dumps", "json_prettydump",
-           "encoder", "decoder"]
+__all__ = ["loads", "dumps", "load", "dump", "pretty",
+           "json_loads", "json_dumps", "json_load", "json_dump",
+           "json_prettydump", "encoder", "decoder"]
 
 
 # Should we aim for the *exact* reproduction of Python types,
@@ -304,6 +304,16 @@ def loads(*pa, **kw):
     return json.loads(*pa, **kw)
 
 
+def dump(*pa, **kw):
+    _encoder_default_args(kw)
+    return json.dump(*pa, **kw)
+
+
+def load(*pa, **kw):
+    _decoder_default_args(kw)
+    return json.load(*pa, **kw)
+
+
 def pretty(x, sort_keys=True, indent=4*' ', separators=(',', ': '), **kw):
     kw.setdefault('sort_keys', sort_keys)
     kw.setdefault('indent', indent)
@@ -314,6 +324,8 @@ def pretty(x, sort_keys=True, indent=4*' ', separators=(',', ': '), **kw):
 
 json_dumps = dumps
 json_loads = loads
+json_dump = dump
+json_load = load
 json_prettydump = pretty
 
 
